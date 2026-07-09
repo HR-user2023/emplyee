@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="特休假管理">
+  <meta name="theme-color" content="#1A1A1A">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- OneSignal 推播通知 SDK：把 appId 換成你自己 OneSignal 後台的 App ID -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({ appId: "PASTE_YOUR_ONESIGNAL_APP_ID_HERE" });
+    });
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#F4F4F3;
+      --card:#FFFFFF;
+      --ink:#181818;
+      --ink-soft:#6E6E6C;
+      --border:#DEDEDC;
+      --primary:#1A1A1A;
+      --primary-light:#3A3A38;
+      --accent:#8C8C89;
+      --pending:#5A5A58;
+      --success:#1A1A1A;
+      --danger:#1A1A1A;
+      --ring-track:#E6E6E4;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:'Noto Sans TC', sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    h1,h2,h3{font-family:'Noto Serif TC', serif; margin:0;}
+    .app{max-width:1000px; margin:0 auto; padding:28px 20px 80px;}
+
+    header.top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:8px;}
+    header.top h1{font-size:22px; color:var(--primary); letter-spacing:.5px;}
+    header.top p{margin:2px 0 0; font-size:13px; color:var(--ink-soft);}
+
+    .mode-switch{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:24px;}
+    .mode-btn{
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+      padding:20px 12px; border-radius:16px; border:1px solid var(--border);
+      background:var(--card); cursor:pointer; font-size:13.5px; font-weight:700; color:var(--ink-soft);
+      transition:all .15s ease;
+    }
+    .mode-btn .tile-icon{font-size:22px; line-height:1;}
+    .mode-btn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+
+    .panel{display:none;}
+    .panel.active{display:block;}
+
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:16px;
+      padding:22px; margin-bottom:18px;
+    }
+    .card h2{font-size:17px; color:var(--primary); margin-bottom:14px;}
+
+    .section-title{
+      font-size:12.5px; font-weight:700; color:var(--accent); text-transform:uppercase;
+      letter-spacing:.06em; margin:22px 0 6px; padding-top:14px; border-top:1px dashed var(--border);
+    }
+    .section-title:first-of-type{border-top:none; margin-top:4px; padding-top:0;}
+
+    label{display:block; font-size:12.5px; color:var(--ink-soft); margin:12px 0 5px; font-weight:500;}
+    input, select, textarea{
+      width:100%; padding:12px 14px; border-radius:9px; border:1px solid var(--border);
+      font-family:inherit; font-size:16px; background:#FBFBFA; color:var(--ink);
+    }
+    textarea{resize:vertical; min-height:60px;}
+
+    .row{display:flex; gap:14px; flex-wrap:wrap;}
+    .row > *{flex:1; min-width:160px;}
+    .row3 > *{flex:1; min-width:130px;}
+
+    button.primary{
+      margin-top:16px; padding:13px 20px; border:none; border-radius:10px;
+      background:var(--primary); color:#fff; font-weight:700; font-size:16px; cursor:pointer;
+    }
+    button.primary:hover{background:var(--primary-light);}
+    button.ghost{
+      margin-top:10px; padding:11px 16px; border-radius:9px; border:1px solid var(--border);
+      background:transparent; color:var(--ink-soft); font-size:14px; cursor:pointer;
+    }
+    button.small-approve{background:var(--ink); color:#fff; border:1px solid var(--ink); padding:8px 14px; border-radius:7px; font-size:13.5px; cursor:pointer; margin-right:6px;}
+    button.small-reject{background:#fff; color:var(--ink); border:1px solid var(--ink); padding:8px 14px; border-radius:7px; font-size:13.5px; cursor:pointer;}
+
+    .msg{font-size:14px; margin-top:10px; padding:10px 12px; border-radius:9px;}
+    .msg.error{background:#F1F1EF; color:var(--ink); border-left:3px solid var(--ink);}
+    .msg.ok{background:#F1F1EF; color:var(--ink); border-left:3px solid #B8B8B5;}
+
+    /* ---- 手機版調整：加大文字與觸控範圍，避免 iOS 輸入框自動放大 ---- */
+    @media (max-width: 480px){
+      body{font-size:16.5px; line-height:1.5;}
+      .app{padding:16px 14px 100px;}
+      header.top{margin-bottom:16px;}
+      header.top h1{font-size:21px;}
+      header.top p{font-size:13.5px;}
+
+      .mode-switch{grid-template-columns:1fr; gap:10px; margin-bottom:20px;}
+      .mode-btn{
+        flex-direction:row; justify-content:flex-start; text-align:left;
+        padding:16px 18px; font-size:16px; border-radius:14px; gap:12px;
+      }
+      .mode-btn .tile-icon{font-size:22px;}
+
+      .card{padding:18px; border-radius:16px; margin-bottom:16px;}
+      .card h2{font-size:17.5px; margin-bottom:16px;}
+      .section-title{font-size:13px; margin:20px 0 8px;}
+      label{font-size:14px; margin:14px 0 6px;}
+      input, select, textarea{padding:13px 14px;}
+      .row, .row3{gap:12px;}
+      .row > *, .row3 > *{min-width:100%;}
+      button.primary{width:100%; font-size:16.5px; padding:15px 20px;}
+      button.ghost{font-size:15px; padding:13px 16px; width:100%;}
+      button.small-approve, button.small-reject{font-size:14.5px; padding:10px 14px;}
+      table{font-size:14px;}
+      th{font-size:13px;}
+      th, td{padding:10px 8px; white-space:normal;}
+      .stat-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
+      .stat{padding:14px 12px;}
+      .stat .k{font-size:13px;}
+      .stat .v{font-size:19px;}
+      .hint{font-size:14px; line-height:1.5;}
+      .empty{font-size:15px;}
+      .msg{font-size:15px; padding:12px 14px;}
+      .badge{font-size:13px; padding:5px 11px;}
+      .tabs{gap:6px;}
+      .tab-btn{font-size:15px; padding:11px 14px;}
+      .ring-label{font-size:13px;}
+      .ring-wrap{gap:16px;}
+    }
+
+    /* ---- 年輪 (growth-ring) 特休進度視覺化 ---- */
+    .ring-wrap{display:flex; align-items:center; gap:26px; flex-wrap:wrap;}
+    .ring-num{font-size:30px; font-family:'Noto Serif TC',serif; fill:var(--primary); font-weight:700;}
+    .ring-label{font-size:12px; fill:var(--ink-soft);}
+    .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; flex:1;}
+    .stat{background:#FAFAF9; border:1px solid var(--border); border-radius:12px; padding:12px 14px;}
+    .stat .k{font-size:11.5px; color:var(--ink-soft); margin-bottom:4px;}
+    .stat .v{font-size:17px; font-weight:700; color:var(--ink);}
+    .stat .v.accent{color:var(--accent);}
+
+    table{width:100%; border-collapse:collapse; font-size:13px; margin-top:6px;}
+    th,td{text-align:left; padding:9px 8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+    th{color:var(--ink-soft); font-weight:500; font-size:12px;}
+    .table-scroll{overflow-x:auto;}
+    .badge{padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; gap:4px;}
+    .badge.待審核{background:#FFFFFF; color:var(--ink-soft); border:1px dashed #B8B8B5;}
+    .badge.已核准{background:var(--ink); color:#fff;}
+    .badge.已拒絕{background:#EDEDEB; color:var(--ink); border:1px solid #B8B8B5;}
+    .badge.在職{background:var(--ink); color:#fff;}
+    .badge.離職{background:#EDEDEB; color:var(--ink-soft); border:1px solid var(--border);}
+
+    .tabs{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+    .tab-btn{padding:9px 14px; border-radius:9px; border:1px solid var(--border); background:var(--card); font-size:13px; cursor:pointer; color:var(--ink-soft);}
+    .tab-btn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+
+    .hint{font-size:12px; color:var(--ink-soft); margin-top:6px;}
+    .empty{font-size:13px; color:var(--ink-soft); padding:14px 0;}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>特休假管理系統</h1>
+      <p>週年制特休 · 到期不遞延</p>
+    </div>
+  </header>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" id="btnModeEmpQuery" onclick="switchMode('emp-query')"><span class="tile-icon">◎</span>員工查詢</button>
+    <button class="mode-btn" id="btnModeEmpApply" onclick="switchMode('emp-apply')"><span class="tile-icon">✎</span>請假申請</button>
+    <button class="mode-btn" id="btnModeNewHire" onclick="switchMode('newhire')"><span class="tile-icon">＋</span>新進員工資料填寫</button>
+    <button class="mode-btn" id="btnModeAdmin" onclick="switchMode('admin')"><span class="tile-icon">▤</span>HR‧主管後台</button>
+  </div>
+
+  <!-- ================= 員工端 ================= -->
+  <div class="panel active" id="panelEmp">
+
+    <div class="card" id="empLoginCard">
+      <h2>查詢我的特休</h2>
+      <div class="row">
+        <div>
+          <label>姓名</label>
+          <input id="empName" placeholder="請輸入登記時的姓名">
+        </div>
+        <div>
+          <label>身份證字號</label>
+          <input id="empNationalId" placeholder="A123456789">
+        </div>
+      </div>
+      <button class="primary" onclick="doFindEmployee()">查詢</button>
+      <div id="empLoginMsg"></div>
+    </div>
+
+    <div id="empDashboard" style="display:none;"></div>
+  </div>
+
+  <!-- ================= 新進員工資料填寫（公開表單） ================= -->
+  <div class="panel" id="panelNewHire">
+    <div class="card">
+      <h2>新進員工資料填寫</h2>
+      <p class="hint">請填寫以下資料，送出後將由人資審核建立正式員工資料，審核完成前不會顯示在系統中。</p>
+
+      <div class="section-title">任職資訊</div>
+      <div class="row3">
+        <div><label>店點</label>
+          <select id="n_branch">
+            <option value="">請選擇</option>
+            <option>皮卡一店</option>
+            <option>皮卡二店</option>
+            <option>皮卡對眼店</option>
+          </select>
+        </div>
+        <div><label>員工類型</label>
+          <select id="n_employeeType">
+            <option value="">請選擇</option>
+            <option>PT</option>
+            <option>正職</option>
+          </select>
+        </div>
+        <div><label>職位</label>
+          <select id="n_position">
+            <option value="">請選擇</option>
+            <option>設計師</option>
+            <option>技術師</option>
+            <option>燙染師</option>
+            <option>行政人員</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3">
+        <div><label>到職日 *</label><input type="date" id="n_hireDate"></div>
+        <div><label>投保日期</label><input type="date" id="n_insuranceDate"></div>
+        <div><label>離職日期</label><input type="date" id="n_resignDate"></div>
+      </div>
+      <div class="row">
+        <div><label>薪資</label><input type="number" id="n_salary" placeholder="例如 40000"></div>
+        <div><label>銀行帳號</label><input id="n_account" placeholder="薪資轉帳用"></div>
+      </div>
+      <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="n_email" placeholder="you@example.com"></div>
+
+      <div class="section-title">基本資料</div>
+      <div class="row3">
+        <div><label>姓名 *</label><input id="n_name"></div>
+        <div><label>暱稱</label><input id="n_nickname"></div>
+        <div><label>性別</label>
+          <select id="n_gender"><option value="">未填</option><option>男</option><option>女</option><option>其他</option></select>
+        </div>
+      </div>
+      <div class="row3">
+        <div><label>身份證字號 *</label><input id="n_nationalId" placeholder="A123456789"></div>
+        <div><label>出生年月日</label><input type="date" id="n_birthDate"></div>
+        <div><label>學歷</label><input id="n_education"></div>
+      </div>
+      <div><label>籍貫</label><input id="n_hometown"></div>
+
+      <div class="section-title">聯絡資訊</div>
+      <div class="row">
+        <div><label>戶籍地址</label><input id="n_householdAddress"></div>
+        <div><label>通訊地址</label><input id="n_mailingAddress"></div>
+      </div>
+      <div class="row">
+        <div><label>家用電話</label><input id="n_homePhone"></div>
+        <div><label>個人手機</label><input id="n_mobilePhone"></div>
+      </div>
+      <div class="row">
+        <div><label>IG</label><input id="n_ig"></div>
+        <div><label>LINE ID</label><input id="n_lineId"></div>
+      </div>
+
+      <div class="section-title">緊急聯絡人</div>
+      <div class="row3">
+        <div><label>緊急聯絡人</label><input id="n_emergencyContact"></div>
+        <div><label>關係</label><input id="n_emergencyRelation"></div>
+        <div><label>緊急聯絡人手機</label><input id="n_emergencyPhone"></div>
+      </div>
+
+      <div class="section-title">備注</div>
+      <textarea id="n_note" placeholder="其他備註事項"></textarea>
+
+      <button class="primary" onclick="doSubmitNewHire()">送出資料</button>
+      <div id="newHireMsg"></div>
+    </div>
+  </div>
+
+  <!-- ================= HR / 主管後台 ================= -->
+  <div class="panel" id="panelAdmin">
+
+    <div class="card" id="adminLoginCard">
+      <h2>管理者登入</h2>
+      <label>管理者 Email（需在白名單內）</label>
+      <input id="adminEmail" placeholder="hr@company.com">
+      <button class="primary" onclick="doAdminLogin()">登入</button>
+      <div id="adminLoginMsg"></div>
+    </div>
+
+    <div id="adminDashboard" style="display:none;">
+      <div class="card">
+        <h2>LINE 通知綁定</h2>
+        <p class="hint">綁定後，有新的請假申請時會透過 LINE 通知您（跟 Email 通知同時發送）。</p>
+        <button class="ghost" onclick="doGetLineCode('hr')">取得綁定驗證碼</button>
+        <div id="hrLineCodeResult"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tabAdd" onclick="switchAdminTab('tabAdd')">新增員工</button>
+        <button class="tab-btn" data-tab="tabList" onclick="switchAdminTab('tabList')">員工總覽</button>
+        <button class="tab-btn" data-tab="tabPending" onclick="switchAdminTab('tabPending')">待審核假單</button>
+        <button class="tab-btn" data-tab="tabNewHire" onclick="switchAdminTab('tabNewHire')">新進員工待審核</button>
+        <button class="ghost" style="margin-left:auto;" onclick="adminLogout()">登出</button>
+      </div>
+
+      <div class="tab-content active" id="tabAdd">
+        <div class="card">
+          <h2>新增新進員工</h2>
+
+          <div class="section-title">任職資訊</div>
+          <div class="row3">
+            <div><label>店點</label>
+              <select id="f_branch">
+                <option value="">請選擇</option>
+                <option>皮卡一店</option>
+                <option>皮卡二店</option>
+                <option>皮卡對眼店</option>
+              </select>
+            </div>
+            <div><label>員工類型</label>
+              <select id="f_employeeType">
+                <option value="">請選擇</option>
+                <option>PT</option>
+                <option>正職</option>
+              </select>
+            </div>
+            <div><label>職位</label>
+              <select id="f_position">
+                <option value="">請選擇</option>
+                <option>設計師</option>
+                <option>技術師</option>
+                <option>燙染師</option>
+                <option>行政人員</option>
+              </select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>到職日 *</label><input type="date" id="f_hireDate"></div>
+            <div><label>投保日期</label><input type="date" id="f_insuranceDate"></div>
+            <div><label>離職日期</label><input type="date" id="f_resignDate"></div>
+          </div>
+          <div class="row">
+            <div><label>薪資（用於折抵金額試算）</label><input type="number" id="f_salary" placeholder="例如 40000"></div>
+            <div><label>銀行帳號</label><input id="f_account" placeholder="薪資轉帳用"></div>
+          </div>
+          <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="f_email" placeholder="you@example.com"></div>
+
+          <div class="section-title">基本資料</div>
+          <div class="row3">
+            <div><label>姓名 *</label><input id="f_name"></div>
+            <div><label>暱稱</label><input id="f_nickname"></div>
+            <div><label>性別</label>
+              <select id="f_gender"><option value="">未填</option><option>男</option><option>女</option><option>其他</option></select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>身份證字號 *（作為唯一識別）</label><input id="f_nationalId" placeholder="A123456789"></div>
+            <div><label>出生年月日</label><input type="date" id="f_birthDate"></div>
+            <div><label>學歷</label><input id="f_education"></div>
+          </div>
+          <div><label>籍貫</label><input id="f_hometown"></div>
+
+          <div class="section-title">聯絡資訊</div>
+          <div class="row">
+            <div><label>戶籍地址</label><input id="f_householdAddress"></div>
+            <div><label>通訊地址</label><input id="f_mailingAddress"></div>
+          </div>
+          <div class="row">
+            <div><label>家用電話</label><input id="f_homePhone"></div>
+            <div><label>個人手機</label><input id="f_mobilePhone"></div>
+          </div>
+          <div class="row">
+            <div><label>IG</label><input id="f_ig"></div>
+            <div><label>LINE ID</label><input id="f_lineId"></div>
+          </div>
+
+          <div class="section-title">緊急聯絡人</div>
+          <div class="row3">
+            <div><label>緊急聯絡人</label><input id="f_emergencyContact"></div>
+            <div><label>關係</label><input id="f_emergencyRelation"></div>
+            <div><label>緊急聯絡人手機</label><input id="f_emergencyPhone"></div>
+          </div>
+
+          <div class="section-title">備注</div>
+          <textarea id="f_note" placeholder="其他備註事項"></textarea>
+
+          <button class="primary" onclick="doAddEmployee()">新增員工</button>
+          <div id="addEmpMsg"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabList">
+        <div class="card">
+          <h2>員工總覽</h2>
+          <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。</p>
+          <div class="table-scroll" id="empListWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabPending">
+        <div class="card">
+          <h2>待審核假單</h2>
+          <div class="table-scroll" id="pendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabNewHire">
+        <div class="card">
+          <h2>新進員工待審核</h2>
+          <p class="hint">核准後會自動把完整資料建立到「員工資料」分頁；如需修改欄位，建立後直接到該分頁編輯即可。</p>
+          <div class="table-scroll" id="newHirePendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabDetail">
+        <button class="ghost" onclick="switchAdminTab('tabList')">← 返回員工總覽</button>
+
+        <div class="card" id="detailLeaveCard"></div>
+
+        <div class="card">
+          <h2>員工詳細資料</h2>
+          <input type="hidden" id="e_originalNationalId">
+
+          <div class="section-title">任職資訊</div>
+          <div class="row3">
+            <div><label>店點</label>
+              <select id="e_branch">
+                <option value="">請選擇</option>
+                <option>皮卡一店</option>
+                <option>皮卡二店</option>
+                <option>皮卡對眼店</option>
+              </select>
+            </div>
+            <div><label>員工類型</label>
+              <select id="e_employeeType">
+                <option value="">請選擇</option>
+                <option>PT</option>
+                <option>正職</option>
+              </select>
+            </div>
+            <div><label>職位</label>
+              <select id="e_position">
+                <option value="">請選擇</option>
+                <option>設計師</option>
+                <option>技術師</option>
+                <option>燙染師</option>
+                <option>行政人員</option>
+              </select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>到職日 *</label><input type="date" id="e_hireDate"></div>
+            <div><label>投保日期</label><input type="date" id="e_insuranceDate"></div>
+            <div><label>離職日期</label><input type="date" id="e_resignDate"></div>
+          </div>
+          <div class="row">
+            <div><label>薪資（用於折抵金額試算）</label><input type="number" id="e_salary" placeholder="例如 40000"></div>
+            <div><label>銀行帳號</label><input id="e_account" placeholder="薪資轉帳用"></div>
+          </div>
+          <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="e_email" placeholder="you@example.com"></div>
+
+          <div class="section-title">基本資料</div>
+          <div class="row3">
+            <div><label>姓名 *</label><input id="e_name"></div>
+            <div><label>暱稱</label><input id="e_nickname"></div>
+            <div><label>性別</label>
+              <select id="e_gender"><option value="">未填</option><option>男</option><option>女</option><option>其他</option></select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>身份證字號 *（作為唯一識別）</label><input id="e_nationalId"></div>
+            <div><label>出生年月日</label><input type="date" id="e_birthDate"></div>
+            <div><label>學歷</label><input id="e_education"></div>
+          </div>
+          <div><label>籍貫</label><input id="e_hometown"></div>
+
+          <div class="section-title">聯絡資訊</div>
+          <div class="row">
+            <div><label>戶籍地址</label><input id="e_householdAddress"></div>
+            <div><label>通訊地址</label><input id="e_mailingAddress"></div>
+          </div>
+          <div class="row">
+            <div><label>家用電話</label><input id="e_homePhone"></div>
+            <div><label>個人手機</label><input id="e_mobilePhone"></div>
+          </div>
+          <div class="row">
+            <div><label>IG</label><input id="e_ig"></div>
+            <div><label>LINE ID</label><input id="e_lineId"></div>
+          </div>
+
+          <div class="section-title">緊急聯絡人</div>
+          <div class="row3">
+            <div><label>緊急聯絡人</label><input id="e_emergencyContact"></div>
+            <div><label>關係</label><input id="e_emergencyRelation"></div>
+            <div><label>緊急聯絡人手機</label><input id="e_emergencyPhone"></div>
+          </div>
+
+          <div class="section-title">備注</div>
+          <textarea id="e_note"></textarea>
+
+          <button class="primary" onclick="doUpdateEmployee()">儲存變更</button>
+          <div id="updateEmpMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

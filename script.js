@@ -46,6 +46,8 @@ function switchMode(mode){
   if(isEmp){
     EMP_TARGET_TAB = (mode === 'schedule') ? 'empTabSchedule' : 'empTabQuery';
     if(CURRENT_EMPLOYEE) switchEmpTab(EMP_TARGET_TAB);
+    const loginTitle = document.getElementById('empLoginTitle');
+    if(loginTitle) loginTitle.textContent = (mode === 'schedule') ? '登入排休系統' : '特休查詢/請假申請';
   }
 }
 
@@ -76,18 +78,50 @@ function showMsg(elId, text, ok){
 function doFindEmployee(){
   const name = document.getElementById('empName').value.trim();
   const nationalId = document.getElementById('empNationalId').value.trim();
+  const rememberMe = document.getElementById('empRememberMe').checked;
   document.getElementById('empLoginMsg').innerHTML = '';
   callApi('findEmployee', {name: name, nationalId: nationalId})
     .then(function(res){
       if(!res.success){ showMsg('empLoginMsg', res.message, false); return; }
       CURRENT_EMPLOYEE = res.employee;
+      if(rememberMe){
+        try{ localStorage.setItem(SAVED_EMPLOYEE_KEY, JSON.stringify({name: name, nationalId: nationalId})); }catch(e){}
+      }
       renderEmpDashboard(res.employee, res.leave);
       identifyOneSignalEmployee_(res.employee.nationalId);
     })
     .catch(function(err){ showMsg('empLoginMsg', err.message || String(err), false); });
 }
 
+const SAVED_EMPLOYEE_KEY = 'leaveapp_saved_employee';
+
+function tryAutoLoginEmployee_(){
+  let saved;
+  try{ saved = JSON.parse(localStorage.getItem(SAVED_EMPLOYEE_KEY) || 'null'); }catch(e){ saved = null; }
+  if(!saved || !saved.name || !saved.nationalId) return;
+  callApi('findEmployee', { name: saved.name, nationalId: saved.nationalId })
+    .then(function(res){
+      if(!res.success) return; // 記住的身份已失效，靜默忽略，回到手動輸入
+      CURRENT_EMPLOYEE = res.employee;
+      renderEmpDashboard(res.employee, res.leave);
+      identifyOneSignalEmployee_(res.employee.nationalId);
+    })
+    .catch(function(){ /* 忽略，讓使用者手動輸入 */ });
+}
+
+function forgetSavedEmployee_(){
+  try{ localStorage.removeItem(SAVED_EMPLOYEE_KEY); }catch(e){}
+  CURRENT_EMPLOYEE = null;
+  document.getElementById('empDashboard').style.display = 'none';
+  document.getElementById('empDashboard').innerHTML = '';
+  document.getElementById('empLoginCard').style.display = 'block';
+  document.getElementById('empName').value = '';
+  document.getElementById('empNationalId').value = '';
+  document.getElementById('empRememberMe').checked = false;
+}
+
 function renderEmpDashboard(emp, leave){
+  document.getElementById('empLoginCard').style.display = 'none';
   document.getElementById('empDashboard').style.display = 'block';
 
   let queryHtml = '';
@@ -172,10 +206,7 @@ function renderEmpDashboard(emp, leave){
     '<div class="card"><h2>我的排休申請</h2><div class="table-scroll" id="mySchedList"><div class="empty">載入中…</div></div></div>';
 
   const html =
-    '<div class="tabs">' +
-      '<button class="tab-btn active" data-tab="empTabQuery" onclick="switchEmpTab(\'empTabQuery\')">特休查詢 / 請假申請</button>' +
-      '<button class="tab-btn" data-tab="empTabSchedule" onclick="switchEmpTab(\'empTabSchedule\')">排休申請</button>' +
-    '</div>' +
+    '<p class="hint" style="text-align:right;"><a href="#" onclick="forgetSavedEmployee_();return false;">不是我 / 清除記住的身份</a></p>' +
     '<div class="tab-content active" id="empTabQuery">' + queryHtml + applyHtml + '</div>' +
     '<div class="tab-content" id="empTabSchedule">' + scheduleHtml + '</div>';
 
@@ -988,3 +1019,4 @@ if ('serviceWorker' in navigator) {
 }
 
 populateAllDateSelects_();
+tryAutoLoginEmployee_();

@@ -346,6 +346,10 @@
       <h2>管理者登入</h2>
       <label>管理者 Email（需在白名單內）</label>
       <input id="adminEmail" placeholder="hr@company.com">
+      <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-weight:400;">
+        <input type="checkbox" id="adminRememberMe" style="width:auto;">
+        記住我這支裝置的身份，下次打開不用再輸入（請勿在共用裝置上勾選）
+      </label>
       <button class="primary" onclick="doAdminLogin(this)">登入</button>
       <div id="adminLoginMsg"></div>
     </div>

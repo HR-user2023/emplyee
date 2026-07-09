@@ -4,7 +4,7 @@
 // 匯入 OneSignal 的推播處理邏輯，讓這個 Service Worker 同時支援手機推播通知
 importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDKWorker.js');
 
-const CACHE_NAME = 'leave-app-shell-v18';
+const CACHE_NAME = 'leave-app-shell-v20';
 const SHELL_ASSETS = [
   './',
   './index.html',

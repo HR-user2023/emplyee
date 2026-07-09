@@ -187,7 +187,6 @@
 
   <div class="mode-switch">
     <button class="mode-btn active" id="btnModeEmpQuery" onclick="switchMode('emp-query')"><span class="tile-icon">◎</span>員工查詢</button>
-    <button class="mode-btn" id="btnModeEmpApply" onclick="switchMode('emp-apply')"><span class="tile-icon">✎</span>請假申請</button>
     <button class="mode-btn" id="btnModeNewHire" onclick="switchMode('newhire')"><span class="tile-icon">＋</span>新進員工資料填寫</button>
     <button class="mode-btn" id="btnModeAdmin" onclick="switchMode('admin')"><span class="tile-icon">▤</span>HR‧主管後台</button>
   </div>
@@ -297,7 +296,7 @@
       <div class="section-title">備注</div>
       <textarea id="n_note" placeholder="其他備註事項"></textarea>
 
-      <button class="primary" onclick="doSubmitNewHire()">送出資料</button>
+      <button class="primary" onclick="doSubmitNewHire(this)">送出資料</button>
       <div id="newHireMsg"></div>
     </div>
   </div>
@@ -309,11 +308,13 @@
       <h2>管理者登入</h2>
       <label>管理者 Email（需在白名單內）</label>
       <input id="adminEmail" placeholder="hr@company.com">
-      <button class="primary" onclick="doAdminLogin()">登入</button>
+      <button class="primary" onclick="doAdminLogin(this)">登入</button>
       <div id="adminLoginMsg"></div>
     </div>
 
     <div id="adminDashboard" style="display:none;">
+      <p class="hint" id="adminWelcome" style="margin-bottom:14px;"></p>
+
       <div class="card">
         <h2>LINE 通知綁定</h2>
         <p class="hint">綁定後，有新的請假申請時會透過 LINE 通知您（跟 Email 通知同時發送）。</p>
@@ -326,6 +327,7 @@
         <button class="tab-btn" data-tab="tabList" onclick="switchAdminTab('tabList')">員工總覽</button>
         <button class="tab-btn" data-tab="tabPending" onclick="switchAdminTab('tabPending')">待審核假單</button>
         <button class="tab-btn" data-tab="tabNewHire" onclick="switchAdminTab('tabNewHire')">新進員工待審核</button>
+        <button class="tab-btn" data-tab="tabSchedule" onclick="switchAdminTab('tabSchedule')">排休協調</button>
         <button class="ghost" style="margin-left:auto;" onclick="adminLogout()">登出</button>
       </div>
 
@@ -410,7 +412,7 @@
           <div class="section-title">備注</div>
           <textarea id="f_note" placeholder="其他備註事項"></textarea>
 
-          <button class="primary" onclick="doAddEmployee()">新增員工</button>
+          <button class="primary" onclick="doAddEmployee(this)">新增員工</button>
           <div id="addEmpMsg"></div>
         </div>
       </div>
@@ -418,7 +420,9 @@
       <div class="tab-content" id="tabList">
         <div class="card">
           <h2>員工總覽</h2>
-          <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。</p>
+          <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。特休天數/已用/剩餘天數也會自動同步寫入試算表最後幾欄，方便直接在 Sheet 上查看。</p>
+          <button class="ghost" onclick="doSyncAllLeaveStats()">同步全部員工的特休數據到試算表</button>
+          <div id="syncStatsMsg"></div>
           <div class="table-scroll" id="empListWrap"><div class="empty">載入中…</div></div>
         </div>
       </div>
@@ -435,6 +439,26 @@
           <h2>新進員工待審核</h2>
           <p class="hint">核准後會自動把完整資料建立到「員工資料」分頁；如需修改欄位，建立後直接到該分頁編輯即可。</p>
           <div class="table-scroll" id="newHirePendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabSchedule">
+        <div class="card">
+          <h2>排休協調</h2>
+          <p class="hint">每月可休天數請直接到「排休設定」試算表分頁填寫（年月+店點+可休天數），系統不會自動計算。標記「⚠衝突」的日期代表同一天有 2 位以上技術師申請排休，請自行協調安排。</p>
+          <div class="row">
+            <div><label>店點</label>
+              <select id="schedAdminStore">
+                <option value="皮卡一店">皮卡一店</option>
+                <option value="皮卡二店">皮卡二店</option>
+                <option value="皮卡對眼店">皮卡對眼店</option>
+              </select>
+            </div>
+            <div><label>年月</label><input type="month" id="schedAdminYearMonth" value=""></div>
+          </div>
+          <button class="ghost" onclick="loadStoreSchedule()">查詢</button>
+          <div id="schedAdminQuotaInfo" style="margin-top:10px;"></div>
+          <div class="table-scroll" id="schedAdminWrap"><div class="empty">請選擇店點與年月後點查詢。</div></div>
         </div>
       </div>
 
@@ -524,7 +548,7 @@
           <div class="section-title">備注</div>
           <textarea id="e_note"></textarea>
 
-          <button class="primary" onclick="doUpdateEmployee()">儲存變更</button>
+          <button class="primary" onclick="doUpdateEmployee(this)">儲存變更</button>
           <div id="updateEmpMsg"></div>
         </div>
       </div>

@@ -146,8 +146,8 @@ function renderEmpDashboard(emp, leave){
       renderQuotaPanel_(leave) +
     '</div>' +
     '<div class="row" style="margin-top:12px;">' +
-      '<div><label>開始日</label><input type="date" id="reqStart"></div>' +
-      '<div><label>結束日</label><input type="date" id="reqEnd"></div>' +
+      '<div><label>開始日</label>' + buildDateSelectHtml_('reqStart', true) + '</div>' +
+      '<div><label>結束日</label>' + buildDateSelectHtml_('reqEnd', true) + '</div>' +
     '</div>' +
     '<label>事由（選填）</label><textarea id="reqReason" placeholder="例如：家庭旅遊"></textarea>' +
     '<button class="primary" onclick="doSubmitLeave(this)">送出申請</button>' +
@@ -160,7 +160,7 @@ function renderEmpDashboard(emp, leave){
     '<div class="card"><h2>排休申請</h2>' +
     '<p class="hint">店點：' + (emp.branch||'-') + '　職位：' + (emp.position||'-') + '</p>' +
     '<label>選擇年月</label>' +
-    '<input type="month" id="schedYearMonth" value="' + defaultYearMonth_() + '" onchange="loadMySchedule()">' +
+    buildDateSelectHtml_('schedYearMonth', false) +
     '<div id="schedQuotaInfo" style="margin-top:10px;"><div class="empty">載入中…</div></div>' +
     '<p class="hint">點月曆上的日期就能選取，可以不連續挑選好幾天（例如湊滿本月 8 天），選好後按下方按鈕一次送出。</p>' +
     '<div id="schedCalendar"></div>' +
@@ -181,6 +181,9 @@ function renderEmpDashboard(emp, leave){
 
   document.getElementById('empDashboard').innerHTML = html;
   switchEmpTab(EMP_TARGET_TAB);
+  setDateSelectValue_('schedYearMonth', defaultYearMonth_(), false);
+  document.getElementById('schedYearMonth_y').addEventListener('change', loadMySchedule);
+  document.getElementById('schedYearMonth_m').addEventListener('change', loadMySchedule);
   loadOtherLeaveOverview();
   loadMyLeaveRequests();
   loadMySchedule();
@@ -233,13 +236,78 @@ function renderMonthCalendar_(yearMonth, segments, closureWeekday, dayMarkers, s
   return html;
 }
 
+// ---------- 年/月/日下拉選單（取代手機系統原生日期選擇器，避免跨機型跑版問題）----------
+function buildDateSelectHtml_(idPrefix, includeDay){
+  const currentYear = new Date().getFullYear();
+  let yearOptions = '<option value="">年</option>';
+  for(let y = currentYear + 1; y >= currentYear - 80; y--){
+    yearOptions += '<option value="'+y+'">'+y+'</option>';
+  }
+  let monthOptions = '<option value="">月</option>';
+  for(let mo = 1; mo <= 12; mo++){
+    const mv = String(mo).padStart(2,'0');
+    monthOptions += '<option value="'+mv+'">'+mo+'</option>';
+  }
+  let html = '<div class="date-select-group">' +
+    '<select id="'+idPrefix+'_y">'+yearOptions+'</select>' +
+    '<select id="'+idPrefix+'_m">'+monthOptions+'</select>';
+  if(includeDay){
+    let dayOptions = '<option value="">日</option>';
+    for(let d = 1; d <= 31; d++){
+      const dv = String(d).padStart(2,'0');
+      dayOptions += '<option value="'+dv+'">'+d+'</option>';
+    }
+    html += '<select id="'+idPrefix+'_d">'+dayOptions+'</select>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function getDateSelectValue_(idPrefix, includeDay){
+  const yEl = document.getElementById(idPrefix+'_y');
+  const mEl = document.getElementById(idPrefix+'_m');
+  if(!yEl || !mEl) return '';
+  const y = yEl.value, m = mEl.value;
+  if(!y || !m) return '';
+  if(includeDay){
+    const dEl = document.getElementById(idPrefix+'_d');
+    const d = dEl ? dEl.value : '';
+    if(!d) return '';
+    return y+'-'+m+'-'+d;
+  }
+  return y+'-'+m;
+}
+
+function setDateSelectValue_(idPrefix, value, includeDay){
+  if(!value) return;
+  const parts = String(value).split('-');
+  const yEl = document.getElementById(idPrefix+'_y');
+  const mEl = document.getElementById(idPrefix+'_m');
+  if(yEl && parts[0]) yEl.value = parts[0];
+  if(mEl && parts[1]) mEl.value = parts[1];
+  if(includeDay && parts[2]){
+    const dEl = document.getElementById(idPrefix+'_d');
+    if(dEl) dEl.value = parts[2];
+  }
+}
+
+function populateAllDateSelects_(){
+  document.querySelectorAll('.date-select-placeholder').forEach(function(el){
+    const idPrefix = el.dataset.id;
+    const includeDay = el.dataset.day === 'true';
+    if(!document.getElementById(idPrefix+'_y')){
+      el.innerHTML = buildDateSelectHtml_(idPrefix, includeDay);
+    }
+  });
+}
+
 function defaultYearMonth_(){
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 function loadMySchedule(){
-  const yearMonth = document.getElementById('schedYearMonth').value;
+  const yearMonth = getDateSelectValue_('schedYearMonth', false);
   if(!yearMonth) return;
   SELECTED_SCHED_DATES = []; // 換月份時清空已選擇的日期
   document.getElementById('schedQuotaInfo').innerHTML = '<div class="empty">載入中…</div>';
@@ -435,8 +503,8 @@ function onLeaveTypeChange(){
 function doSubmitLeave(btn){
   if(btn && btn.disabled) return;
   const leaveType = document.getElementById('reqLeaveType').value;
-  const startDate = document.getElementById('reqStart').value;
-  const endDate = document.getElementById('reqEnd').value;
+  const startDate = getDateSelectValue_('reqStart', true);
+  const endDate = getDateSelectValue_('reqEnd', true);
   const reason = document.getElementById('reqReason').value;
   if(!startDate || !endDate){ showMsg('submitLeaveMsg','請選擇開始與結束日期。', false); return; }
 
@@ -489,9 +557,9 @@ function doSubmitNewHire(btn){
     position: nval('n_position'),
     name: nval('n_name'),
     nickname: nval('n_nickname'),
-    hireDate: nval('n_hireDate'),
+    hireDate: getDateSelectValue_('n_hireDate', true),
     nationalId: nval('n_nationalId'),
-    birthDate: nval('n_birthDate'),
+    birthDate: getDateSelectValue_('n_birthDate', true),
     gender: nval('n_gender'),
     householdAddress: nval('n_householdAddress'),
     mailingAddress: nval('n_mailingAddress'),
@@ -499,7 +567,7 @@ function doSubmitNewHire(btn){
     mobilePhone: nval('n_mobilePhone'),
     education: nval('n_education'),
     hometown: nval('n_hometown'),
-    insuranceDate: nval('n_insuranceDate'),
+    insuranceDate: getDateSelectValue_('n_insuranceDate', true),
     salary: nval('n_salary'),
     emergencyContact: nval('n_emergencyContact'),
     emergencyRelation: nval('n_emergencyRelation'),
@@ -507,7 +575,7 @@ function doSubmitNewHire(btn){
     note: nval('n_note'),
     ig: nval('n_ig'),
     lineId: nval('n_lineId'),
-    resignDate: nval('n_resignDate'),
+    resignDate: getDateSelectValue_('n_resignDate', true),
     account: nval('n_account'),
     email: nval('n_email')
   };
@@ -610,8 +678,9 @@ function switchAdminTab(tab){
   if(tab==='tabPending') loadPendingRequests();
   if(tab==='tabNewHire') loadPendingNewHires();
   if(tab==='tabSchedule'){
-    const ymInput = document.getElementById('schedAdminYearMonth');
-    if(ymInput && !ymInput.value) ymInput.value = defaultYearMonth_();
+    if(!getDateSelectValue_('schedAdminYearMonth', false)){
+      setDateSelectValue_('schedAdminYearMonth', defaultYearMonth_(), false);
+    }
   }
 }
 
@@ -624,9 +693,9 @@ function doAddEmployee(btn){
     position: val('f_position'),
     name: val('f_name'),
     nickname: val('f_nickname'),
-    hireDate: val('f_hireDate'),
+    hireDate: getDateSelectValue_('f_hireDate', true),
     nationalId: val('f_nationalId'),
-    birthDate: val('f_birthDate'),
+    birthDate: getDateSelectValue_('f_birthDate', true),
     gender: val('f_gender'),
     householdAddress: val('f_householdAddress'),
     mailingAddress: val('f_mailingAddress'),
@@ -634,7 +703,7 @@ function doAddEmployee(btn){
     mobilePhone: val('f_mobilePhone'),
     education: val('f_education'),
     hometown: val('f_hometown'),
-    insuranceDate: val('f_insuranceDate'),
+    insuranceDate: getDateSelectValue_('f_insuranceDate', true),
     salary: val('f_salary'),
     emergencyContact: val('f_emergencyContact'),
     emergencyRelation: val('f_emergencyRelation'),
@@ -642,7 +711,7 @@ function doAddEmployee(btn){
     note: val('f_note'),
     ig: val('f_ig'),
     lineId: val('f_lineId'),
-    resignDate: val('f_resignDate'),
+    resignDate: getDateSelectValue_('f_resignDate', true),
     account: val('f_account'),
     email: val('f_email')
   };
@@ -699,10 +768,14 @@ function openEmployeeDetail(nationalId){
     .then(function(res){
       const emp = res.employee;
       document.getElementById('e_originalNationalId').value = emp.nationalId;
-      ['branch','employeeType','position','name','nickname','hireDate','nationalId','birthDate','gender',
-       'householdAddress','mailingAddress','homePhone','mobilePhone','education','hometown','insuranceDate',
-       'salary','emergencyContact','emergencyRelation','emergencyPhone','note','ig','lineId','resignDate','account','email']
+      ['branch','employeeType','position','name','nickname','nationalId','gender',
+       'householdAddress','mailingAddress','homePhone','mobilePhone','education','hometown',
+       'salary','emergencyContact','emergencyRelation','emergencyPhone','note','ig','lineId','account','email']
       .forEach(k => { const el = document.getElementById('e_'+k); if(el) el.value = emp[k] || ''; });
+      setDateSelectValue_('e_hireDate', emp.hireDate, true);
+      setDateSelectValue_('e_birthDate', emp.birthDate, true);
+      setDateSelectValue_('e_insuranceDate', emp.insuranceDate, true);
+      setDateSelectValue_('e_resignDate', emp.resignDate, true);
 
       const l = res.leave;
       let lh = '<h2>'+emp.name+' 的特休狀態　<span style="font-size:12px;color:var(--ink-soft);font-weight:400;">('+badgeHtml(res.status)+')</span></h2>';
@@ -735,9 +808,9 @@ function doUpdateEmployee(btn){
     position: val('e_position'),
     name: val('e_name'),
     nickname: val('e_nickname'),
-    hireDate: val('e_hireDate'),
+    hireDate: getDateSelectValue_('e_hireDate', true),
     nationalId: val('e_nationalId'),
-    birthDate: val('e_birthDate'),
+    birthDate: getDateSelectValue_('e_birthDate', true),
     gender: val('e_gender'),
     householdAddress: val('e_householdAddress'),
     mailingAddress: val('e_mailingAddress'),
@@ -745,7 +818,7 @@ function doUpdateEmployee(btn){
     mobilePhone: val('e_mobilePhone'),
     education: val('e_education'),
     hometown: val('e_hometown'),
-    insuranceDate: val('e_insuranceDate'),
+    insuranceDate: getDateSelectValue_('e_insuranceDate', true),
     salary: val('e_salary'),
     emergencyContact: val('e_emergencyContact'),
     emergencyRelation: val('e_emergencyRelation'),
@@ -753,7 +826,7 @@ function doUpdateEmployee(btn){
     note: val('e_note'),
     ig: val('e_ig'),
     lineId: val('e_lineId'),
-    resignDate: val('e_resignDate'),
+    resignDate: getDateSelectValue_('e_resignDate', true),
     account: val('e_account'),
     email: val('e_email')
   };
@@ -842,7 +915,7 @@ function doReviewNewHire(submissionId, decision, btn){
 
 function loadStoreSchedule(){
   const store = document.getElementById('schedAdminStore').value;
-  const yearMonth = document.getElementById('schedAdminYearMonth').value;
+  const yearMonth = getDateSelectValue_('schedAdminYearMonth', false);
   if(!yearMonth) return;
   document.getElementById('schedAdminQuotaInfo').innerHTML = '<div class="empty">載入中…</div>';
   document.getElementById('schedAdminWrap').innerHTML = '<div class="empty">載入中…</div>';
@@ -913,3 +986,5 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+populateAllDateSelects_();

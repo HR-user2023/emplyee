@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="特休假管理">
+  <meta name="theme-color" content="#1A1A1A">
+  <link rel="apple-touch-icon" href="data:image/png;base64,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">
+  <link rel="icon" type="image/png" sizes="512x512" href="data:image/png;base64,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">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#F4F4F3;
+      --card:#FFFFFF;
+      --ink:#181818;
+      --ink-soft:#6E6E6C;
+      --border:#DEDEDC;
+      --primary:#1A1A1A;
+      --primary-light:#3A3A38;
+      --accent:#8C8C89;
+      --pending:#5A5A58;
+      --success:#1A1A1A;
+      --danger:#1A1A1A;
+      --ring-track:#E6E6E4;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:'Noto Sans TC', sans-serif;
+      -webkit-font-smoothing:antialiased;
+    }
+    h1,h2,h3{font-family:'Noto Serif TC', serif; margin:0;}
+    .app{max-width:1000px; margin:0 auto; padding:28px 20px 80px;}
+
+    header.top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:8px;}
+    header.top h1{font-size:22px; color:var(--primary); letter-spacing:.5px;}
+    header.top p{margin:2px 0 0; font-size:13px; color:var(--ink-soft);}
+
+    .mode-switch{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:24px;}
+    .mode-btn{
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+      padding:20px 12px; border-radius:16px; border:1px solid var(--border);
+      background:var(--card); cursor:pointer; font-size:13.5px; font-weight:700; color:var(--ink-soft);
+      transition:all .15s ease;
+    }
+    .mode-btn .tile-icon{font-size:22px; line-height:1;}
+    .mode-btn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+
+    .panel{display:none;}
+    .panel.active{display:block;}
+
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:16px;
+      padding:22px; margin-bottom:18px;
+    }
+    .card h2{font-size:17px; color:var(--primary); margin-bottom:14px;}
+
+    .section-title{
+      font-size:12.5px; font-weight:700; color:var(--accent); text-transform:uppercase;
+      letter-spacing:.06em; margin:22px 0 6px; padding-top:14px; border-top:1px dashed var(--border);
+    }
+    .section-title:first-of-type{border-top:none; margin-top:4px; padding-top:0;}
+
+    label{display:block; font-size:12.5px; color:var(--ink-soft); margin:12px 0 5px; font-weight:500;}
+    input, select, textarea{
+      width:100%; padding:12px 14px; border-radius:9px; border:1px solid var(--border);
+      font-family:inherit; font-size:16px; background:#FBFBFA; color:var(--ink);
+    }
+    textarea{resize:vertical; min-height:60px;}
+
+    .row{display:flex; gap:14px; flex-wrap:wrap;}
+    .row > *{flex:1; min-width:160px;}
+    .row3 > *{flex:1; min-width:130px;}
+
+    button.primary{
+      margin-top:16px; padding:13px 20px; border:none; border-radius:10px;
+      background:var(--primary); color:#fff; font-weight:700; font-size:16px; cursor:pointer;
+    }
+    button.primary:hover{background:var(--primary-light);}
+    button.ghost{
+      margin-top:10px; padding:11px 16px; border-radius:9px; border:1px solid var(--border);
+      background:transparent; color:var(--ink-soft); font-size:14px; cursor:pointer;
+    }
+    button.small-approve{background:var(--ink); color:#fff; border:1px solid var(--ink); padding:8px 14px; border-radius:7px; font-size:13.5px; cursor:pointer; margin-right:6px;}
+    button.small-reject{background:#fff; color:var(--ink); border:1px solid var(--ink); padding:8px 14px; border-radius:7px; font-size:13.5px; cursor:pointer;}
+
+    .msg{font-size:14px; margin-top:10px; padding:10px 12px; border-radius:9px;}
+    .msg.error{background:#F1F1EF; color:var(--ink); border-left:3px solid var(--ink);}
+    .msg.ok{background:#F1F1EF; color:var(--ink); border-left:3px solid #B8B8B5;}
+
+    /* ---- 手機版調整：加大文字與觸控範圍，避免 iOS 輸入框自動放大 ---- */
+    @media (max-width: 480px){
+      body{font-size:16.5px; line-height:1.5;}
+      .app{padding:16px 14px 100px;}
+      header.top{margin-bottom:16px;}
+      header.top h1{font-size:21px;}
+      header.top p{font-size:13.5px;}
+
+      .mode-switch{grid-template-columns:1fr; gap:10px; margin-bottom:20px;}
+      .mode-btn{
+        flex-direction:row; justify-content:flex-start; text-align:left;
+        padding:16px 18px; font-size:16px; border-radius:14px; gap:12px;
+      }
+      .mode-btn .tile-icon{font-size:22px;}
+
+      .card{padding:18px; border-radius:16px; margin-bottom:16px;}
+      .card h2{font-size:17.5px; margin-bottom:16px;}
+      .section-title{font-size:13px; margin:20px 0 8px;}
+      label{font-size:14px; margin:14px 0 6px;}
+      input, select, textarea{padding:13px 14px;}
+      .row, .row3{gap:12px;}
+      .row > *, .row3 > *{min-width:100%;}
+      button.primary{width:100%; font-size:16.5px; padding:15px 20px;}
+      button.ghost{font-size:15px; padding:13px 16px; width:100%;}
+      button.small-approve, button.small-reject{font-size:14.5px; padding:10px 14px;}
+      table{font-size:14px;}
+      th{font-size:13px;}
+      th, td{padding:10px 8px; white-space:normal;}
+      .stat-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
+      .stat{padding:14px 12px;}
+      .stat .k{font-size:13px;}
+      .stat .v{font-size:19px;}
+      .hint{font-size:14px; line-height:1.5;}
+      .empty{font-size:15px;}
+      .msg{font-size:15px; padding:12px 14px;}
+      .badge{font-size:13px; padding:5px 11px;}
+      .tabs{gap:6px;}
+      .tab-btn{font-size:15px; padding:11px 14px;}
+      .ring-label{font-size:13px;}
+      .ring-wrap{gap:16px;}
+    }
+
+    /* ---- 年輪 (growth-ring) 特休進度視覺化 ---- */
+    .ring-wrap{display:flex; align-items:center; gap:26px; flex-wrap:wrap;}
+    .ring-num{font-size:30px; font-family:'Noto Serif TC',serif; fill:var(--primary); font-weight:700;}
+    .ring-label{font-size:12px; fill:var(--ink-soft);}
+    .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; flex:1;}
+    .stat{background:#FAFAF9; border:1px solid var(--border); border-radius:12px; padding:12px 14px;}
+    .stat .k{font-size:11.5px; color:var(--ink-soft); margin-bottom:4px;}
+    .stat .v{font-size:17px; font-weight:700; color:var(--ink);}
+    .stat .v.accent{color:var(--accent);}
+
+    table{width:100%; border-collapse:collapse; font-size:13px; margin-top:6px;}
+    th,td{text-align:left; padding:9px 8px; border-bottom:1px solid var(--border); white-space:nowrap;}
+    th{color:var(--ink-soft); font-weight:500; font-size:12px;}
+    .table-scroll{overflow-x:auto;}
+    .badge{padding:3px 9px; border-radius:20px; font-size:11.5px; font-weight:700; display:inline-flex; align-items:center; gap:4px;}
+    .badge.待審核{background:#FFFFFF; color:var(--ink-soft); border:1px dashed #B8B8B5;}
+    .badge.已核准{background:var(--ink); color:#fff;}
+    .badge.已拒絕{background:#EDEDEB; color:var(--ink); border:1px solid #B8B8B5;}
+    .badge.在職{background:var(--ink); color:#fff;}
+    .badge.離職{background:#EDEDEB; color:var(--ink-soft); border:1px solid var(--border);}
+
+    .tabs{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+    .tab-btn{padding:9px 14px; border-radius:9px; border:1px solid var(--border); background:var(--card); font-size:13px; cursor:pointer; color:var(--ink-soft);}
+    .tab-btn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;}
+
+    .hint{font-size:12px; color:var(--ink-soft); margin-top:6px;}
+    .empty{font-size:13px; color:var(--ink-soft); padding:14px 0;}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>特休假管理系統</h1>
+      <p>週年制特休 · 到期不遞延</p>
+    </div>
+  </header>
+
+  <div class="mode-switch">
+    <button class="mode-btn active" id="btnModeEmpQuery" onclick="switchMode('emp-query')"><span class="tile-icon">◎</span>員工查詢</button>
+    <button class="mode-btn" id="btnModeNewHire" onclick="switchMode('newhire')"><span class="tile-icon">＋</span>新進員工資料填寫</button>
+    <button class="mode-btn" id="btnModeAdmin" onclick="switchMode('admin')"><span class="tile-icon">▤</span>HR‧主管後台</button>
+  </div>
+
+  <!-- ================= 員工端 ================= -->
+  <div class="panel active" id="panelEmp">
+
+    <div class="card" id="empLoginCard">
+      <h2>查詢我的特休</h2>
+      <div class="row">
+        <div>
+          <label>姓名</label>
+          <input id="empName" placeholder="請輸入登記時的姓名">
+        </div>
+        <div>
+          <label>身份證字號</label>
+          <input id="empNationalId" placeholder="A123456789">
+        </div>
+      </div>
+      <button class="primary" onclick="doFindEmployee()">查詢</button>
+      <div id="empLoginMsg"></div>
+    </div>
+
+    <div id="empDashboard" style="display:none;"></div>
+  </div>
+
+  <!-- ================= 新進員工資料填寫（公開表單） ================= -->
+  <div class="panel" id="panelNewHire">
+    <div class="card">
+      <h2>新進員工資料填寫</h2>
+      <p class="hint">請填寫以下資料，送出後將由人資審核建立正式員工資料，審核完成前不會顯示在系統中。</p>
+
+      <div class="section-title">任職資訊</div>
+      <div class="row3">
+        <div><label>店點</label>
+          <select id="n_branch">
+            <option value="">請選擇</option>
+            <option>皮卡一店</option>
+            <option>皮卡二店</option>
+            <option>皮卡對眼店</option>
+          </select>
+        </div>
+        <div><label>員工類型</label>
+          <select id="n_employeeType">
+            <option value="">請選擇</option>
+            <option>PT</option>
+            <option>正職</option>
+          </select>
+        </div>
+        <div><label>職位</label>
+          <select id="n_position">
+            <option value="">請選擇</option>
+            <option>設計師</option>
+            <option>技術師</option>
+            <option>燙染師</option>
+            <option>行政人員</option>
+          </select>
+        </div>
+      </div>
+      <div class="row3">
+        <div><label>到職日 *</label><input type="date" id="n_hireDate"></div>
+        <div><label>投保日期</label><input type="date" id="n_insuranceDate"></div>
+        <div><label>離職日期</label><input type="date" id="n_resignDate"></div>
+      </div>
+      <div class="row">
+        <div><label>薪資</label><input type="number" id="n_salary" placeholder="例如 40000"></div>
+        <div><label>銀行帳號</label><input id="n_account" placeholder="薪資轉帳用"></div>
+      </div>
+      <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="n_email" placeholder="you@example.com"></div>
+
+      <div class="section-title">基本資料</div>
+      <div class="row3">
+        <div><label>姓名 *</label><input id="n_name"></div>
+        <div><label>暱稱</label><input id="n_nickname"></div>
+        <div><label>性別</label>
+          <select id="n_gender"><option value="">未填</option><option>男</option><option>女</option><option>其他</option></select>
+        </div>
+      </div>
+      <div class="row3">
+        <div><label>身份證字號 *</label><input id="n_nationalId" placeholder="A123456789"></div>
+        <div><label>出生年月日</label><input type="date" id="n_birthDate"></div>
+        <div><label>學歷</label><input id="n_education"></div>
+      </div>
+      <div><label>籍貫</label><input id="n_hometown"></div>
+
+      <div class="section-title">聯絡資訊</div>
+      <div class="row">
+        <div><label>戶籍地址</label><input id="n_householdAddress"></div>
+        <div><label>通訊地址</label><input id="n_mailingAddress"></div>
+      </div>
+      <div class="row">
+        <div><label>家用電話</label><input id="n_homePhone"></div>
+        <div><label>個人手機</label><input id="n_mobilePhone"></div>
+      </div>
+      <div class="row">
+        <div><label>IG</label><input id="n_ig"></div>
+        <div><label>LINE ID</label><input id="n_lineId"></div>
+      </div>
+
+      <div class="section-title">緊急聯絡人</div>
+      <div class="row3">
+        <div><label>緊急聯絡人</label><input id="n_emergencyContact"></div>
+        <div><label>關係</label><input id="n_emergencyRelation"></div>
+        <div><label>緊急聯絡人手機</label><input id="n_emergencyPhone"></div>
+      </div>
+
+      <div class="section-title">備注</div>
+      <textarea id="n_note" placeholder="其他備註事項"></textarea>
+
+      <button class="primary" onclick="doSubmitNewHire(this)">送出資料</button>
+      <div id="newHireMsg"></div>
+    </div>
+  </div>
+
+  <!-- ================= HR / 主管後台 ================= -->
+  <div class="panel" id="panelAdmin">
+
+    <div class="card" id="adminLoginCard">
+      <h2>管理者登入</h2>
+      <label>管理者 Email（需在白名單內）</label>
+      <input id="adminEmail" placeholder="hr@company.com">
+      <button class="primary" onclick="doAdminLogin(this)">登入</button>
+      <div id="adminLoginMsg"></div>
+    </div>
+
+    <div id="adminDashboard" style="display:none;">
+      <p class="hint" id="adminWelcome" style="margin-bottom:14px;"></p>
+
+      <div class="card">
+        <h2>LINE 通知綁定</h2>
+        <p class="hint">綁定後，有新的請假申請時會透過 LINE 通知您（跟 Email 通知同時發送）。</p>
+        <button class="ghost" onclick="doGetLineCode('hr')">取得綁定驗證碼</button>
+        <div id="hrLineCodeResult"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tabAdd" onclick="switchAdminTab('tabAdd')">新增員工</button>
+        <button class="tab-btn" data-tab="tabList" onclick="switchAdminTab('tabList')">員工總覽</button>
+        <button class="tab-btn" data-tab="tabPending" onclick="switchAdminTab('tabPending')">待審核假單</button>
+        <button class="tab-btn" data-tab="tabNewHire" onclick="switchAdminTab('tabNewHire')">新進員工待審核</button>
+        <button class="tab-btn" data-tab="tabSchedule" onclick="switchAdminTab('tabSchedule')">排休協調</button>
+        <button class="ghost" style="margin-left:auto;" onclick="adminLogout()">登出</button>
+      </div>
+
+      <div class="tab-content active" id="tabAdd">
+        <div class="card">
+          <h2>新增新進員工</h2>
+
+          <div class="section-title">任職資訊</div>
+          <div class="row3">
+            <div><label>店點</label>
+              <select id="f_branch">
+                <option value="">請選擇</option>
+                <option>皮卡一店</option>
+                <option>皮卡二店</option>
+                <option>皮卡對眼店</option>
+              </select>
+            </div>
+            <div><label>員工類型</label>
+              <select id="f_employeeType">
+                <option value="">請選擇</option>
+                <option>PT</option>
+                <option>正職</option>
+              </select>
+            </div>
+            <div><label>職位</label>
+              <select id="f_position">
+                <option value="">請選擇</option>
+                <option>設計師</option>
+                <option>技術師</option>
+                <option>燙染師</option>
+                <option>行政人員</option>
+              </select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>到職日 *</label><input type="date" id="f_hireDate"></div>
+            <div><label>投保日期</label><input type="date" id="f_insuranceDate"></div>
+            <div><label>離職日期</label><input type="date" id="f_resignDate"></div>
+          </div>
+          <div class="row">
+            <div><label>薪資（用於折抵金額試算）</label><input type="number" id="f_salary" placeholder="例如 40000"></div>
+            <div><label>銀行帳號</label><input id="f_account" placeholder="薪資轉帳用"></div>
+          </div>
+          <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="f_email" placeholder="you@example.com"></div>
+
+          <div class="section-title">基本資料</div>
+          <div class="row3">
+            <div><label>姓名 *</label><input id="f_name"></div>
+            <div><label>暱稱</label><input id="f_nickname"></div>
+            <div><label>性別</label>
+              <select id="f_gender"><option value="">未填</option><option>男</option><option>女</option><option>其他</option></select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>身份證字號 *（作為唯一識別）</label><input id="f_nationalId" placeholder="A123456789"></div>
+            <div><label>出生年月日</label><input type="date" id="f_birthDate"></div>
+            <div><label>學歷</label><input id="f_education"></div>
+          </div>
+          <div><label>籍貫</label><input id="f_hometown"></div>
+
+          <div class="section-title">聯絡資訊</div>
+          <div class="row">
+            <div><label>戶籍地址</label><input id="f_householdAddress"></div>
+            <div><label>通訊地址</label><input id="f_mailingAddress"></div>
+          </div>
+          <div class="row">
+            <div><label>家用電話</label><input id="f_homePhone"></div>
+            <div><label>個人手機</label><input id="f_mobilePhone"></div>
+          </div>
+          <div class="row">
+            <div><label>IG</label><input id="f_ig"></div>
+            <div><label>LINE ID</label><input id="f_lineId"></div>
+          </div>
+
+          <div class="section-title">緊急聯絡人</div>
+          <div class="row3">
+            <div><label>緊急聯絡人</label><input id="f_emergencyContact"></div>
+            <div><label>關係</label><input id="f_emergencyRelation"></div>
+            <div><label>緊急聯絡人手機</label><input id="f_emergencyPhone"></div>
+          </div>
+
+          <div class="section-title">備注</div>
+          <textarea id="f_note" placeholder="其他備註事項"></textarea>
+
+          <button class="primary" onclick="doAddEmployee(this)">新增員工</button>
+          <div id="addEmpMsg"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabList">
+        <div class="card">
+          <h2>員工總覽</h2>
+          <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。特休天數/已用/剩餘天數也會自動同步寫入試算表最後幾欄，方便直接在 Sheet 上查看。</p>
+          <button class="ghost" onclick="doSyncAllLeaveStats()">同步全部員工的特休數據到試算表</button>
+          <div id="syncStatsMsg"></div>
+          <div class="table-scroll" id="empListWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabPending">
+        <div class="card">
+          <h2>待審核假單</h2>
+          <div class="table-scroll" id="pendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabNewHire">
+        <div class="card">
+          <h2>新進員工待審核</h2>
+          <p class="hint">核准後會自動把完整資料建立到「員工資料」分頁；如需修改欄位，建立後直接到該分頁編輯即可。</p>
+          <div class="table-scroll" id="newHirePendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabSchedule">
+        <div class="card">
+          <h2>排休協調</h2>
+          <p class="hint">每月可休天數請直接到「排休設定」試算表分頁填寫（年月+店點+可休天數），系統不會自動計算。標記「⚠衝突」的日期代表同一天有 2 位以上技術師申請排休，請自行協調安排。</p>
+          <div class="row">
+            <div><label>店點</label>
+              <select id="schedAdminStore">
+                <option value="皮卡一店">皮卡一店</option>
+                <option value="皮卡二店">皮卡二店</option>
+                <option value="皮卡對眼店">皮卡對眼店</option>
+              </select>
+            </div>
+            <div><label>年月</label><input type="month" id="schedAdminYearMonth" value="" onchange=""></div>
+          </div>
+          <button class="ghost" onclick="loadStoreSchedule()">查詢</button>
+          <div id="schedAdminQuotaInfo" style="margin-top:10px;"></div>
+          <div class="table-scroll" id="schedAdminWrap"><div class="empty">請選擇店點與年月後點查詢。</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabDetail">
+        <button class="ghost" onclick="switchAdminTab('tabList')">← 返回員工總覽</button>
+
+        <div class="card" id="detailLeaveCard"></div>
+
+        <div class="card">
+          <h2>員工詳細資料</h2>
+          <input type="hidden" id="e_originalNationalId">
+
+          <div class="section-title">任職資訊</div>
+          <div class="row3">
+            <div><label>店點</label>
+              <select id="e_branch">
+                <option value="">請選擇</option>
+                <option>皮卡一店</option>
+                <option>皮卡二店</option>
+                <option>皮卡對眼店</option>
+              </select>
+            </div>
+            <div><label>員工類型</label>
+              <select id="e_employeeType">
+                <option value="">請選擇</option>
+                <option>PT</option>
+                <option>正職</option>
+              </select>
+            </div>
+            <div><label>職位</label>
+              <select id="e_position">
+                <option value="">請選擇</option>
+                <option>設計師</option>
+                <option>技術師</option>
+                <option>燙染師</option>
+                <option>行政人員</option>
+              </select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>到職日 *</label><input type="date" id="e_hireDate"></div>
+            <div><label>投保日期</label><input type="date" id="e_insuranceDate"></div>
+            <div><label>離職日期</label><input type="date" id="e_resignDate"></div>
+          </div>
+          <div class="row">
+            <div><label>薪資（用於折抵金額試算）</label><input type="number" id="e_salary" placeholder="例如 40000"></div>
+            <div><label>銀行帳號</label><input id="e_account" placeholder="薪資轉帳用"></div>
+          </div>
+          <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="e_email" placeholder="you@example.com"></div>
+
+          <div class="section-title">基本資料</div>
+          <div class="row3">
+            <div><label>姓名 *</label><input id="e_name"></div>
+            <div><label>暱稱</label><input id="e_nickname"></div>
+            <div><label>性別</label>
+              <select id="e_gender"><option value="">未填</option><option>男</option><option>女</option><option>其他</option></select>
+            </div>
+          </div>
+          <div class="row3">
+            <div><label>身份證字號 *（作為唯一識別）</label><input id="e_nationalId"></div>
+            <div><label>出生年月日</label><input type="date" id="e_birthDate"></div>
+            <div><label>學歷</label><input id="e_education"></div>
+          </div>
+          <div><label>籍貫</label><input id="e_hometown"></div>
+
+          <div class="section-title">聯絡資訊</div>
+          <div class="row">
+            <div><label>戶籍地址</label><input id="e_householdAddress"></div>
+            <div><label>通訊地址</label><input id="e_mailingAddress"></div>
+          </div>
+          <div class="row">
+            <div><label>家用電話</label><input id="e_homePhone"></div>
+            <div><label>個人手機</label><input id="e_mobilePhone"></div>
+          </div>
+          <div class="row">
+            <div><label>IG</label><input id="e_ig"></div>
+            <div><label>LINE ID</label><input id="e_lineId"></div>
+          </div>
+
+          <div class="section-title">緊急聯絡人</div>
+          <div class="row3">
+            <div><label>緊急聯絡人</label><input id="e_emergencyContact"></div>
+            <div><label>關係</label><input id="e_emergencyRelation"></div>
+            <div><label>緊急聯絡人手機</label><input id="e_emergencyPhone"></div>
+          </div>
+
+          <div class="section-title">備注</div>
+          <textarea id="e_note"></textarea>
+
+          <button class="primary" onclick="doUpdateEmployee(this)">儲存變更</button>
+          <div id="updateEmpMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let CURRENT_EMPLOYEE = null;
+  let ADMIN_TOKEN = null;
+  let EMP_TARGET_TAB = 'empTabQuery';
+  const OTHER_LEAVE_TYPES = ['事假','病假','婚假','喪假','產假'];
+
+  function switchMode(mode){
+    const isEmp = (mode === 'emp-query');
+    document.getElementById('panelEmp').classList.toggle('active', isEmp);
+    document.getElementById('panelNewHire').classList.toggle('active', mode==='newhire');
+    document.getElementById('panelAdmin').classList.toggle('active', mode==='admin');
+    document.getElementById('btnModeEmpQuery').classList.toggle('active', mode==='emp-query');
+    document.getElementById('btnModeNewHire').classList.toggle('active', mode==='newhire');
+    document.getElementById('btnModeAdmin').classList.toggle('active', mode==='admin');
+    if(isEmp){
+      EMP_TARGET_TAB = 'empTabQuery';
+      if(CURRENT_EMPLOYEE) switchEmpTab(EMP_TARGET_TAB);
+    }
+  }
+
+  function switchEmpTab(tab){
+    document.querySelectorAll('#empDashboard .tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    document.querySelectorAll('#empDashboard .tab-content').forEach(c=>c.classList.toggle('active', c.id===tab));
+  }
+
+  function setBtnBusy(btn, busy, busyText){
+    if(!btn) return;
+    if(busy){
+      if(btn.dataset.originalText === undefined) btn.dataset.originalText = btn.textContent;
+      btn.textContent = busyText || '處理中…';
+      btn.disabled = true;
+    } else {
+      btn.disabled = false;
+      if(btn.dataset.originalText !== undefined) btn.textContent = btn.dataset.originalText;
+    }
+  }
+
+  function showMsg(elId, text, ok){
+    const el = document.getElementById(elId);
+    const icon = ok ? '✓' : '⚠';
+    el.innerHTML = '<div class="msg ' + (ok?'ok':'error') + '">' + icon + ' ' + text + '</div>';
+  }
+
+  /* ---------------- 員工端 ---------------- */
+  function doFindEmployee(){
+    const name = document.getElementById('empName').value.trim();
+    const nationalId = document.getElementById('empNationalId').value.trim();
+    document.getElementById('empLoginMsg').innerHTML = '';
+    google.script.run
+      .withSuccessHandler(function(res){
+        if(!res.success){ showMsg('empLoginMsg', res.message, false); return; }
+        CURRENT_EMPLOYEE = res.employee;
+        renderEmpDashboard(res.employee, res.leave);
+      })
+      .withFailureHandler(function(err){ showMsg('empLoginMsg', err.message || String(err), false); })
+      .findEmployee({name: name, nationalId: nationalId});
+  }
+
+  function renderEmpDashboard(emp, leave){
+    document.getElementById('empDashboard').style.display = 'block';
+
+    let queryHtml = '';
+    if(!leave.eligible){
+      queryHtml += '<div class="card"><h2>' + emp.name + ' 的特休狀態</h2>' +
+              '<p class="hint">' + leave.message + '（預計 ' + leave.nextEligibleDate + ' 起取得特休）</p></div>';
+    } else {
+      const c = leave.current;
+      const pct = c.entitled > 0 ? Math.min(1, c.used / c.entitled) : 0;
+      const r = 54, circ = 2*Math.PI*r;
+      const dash = circ * pct;
+
+      queryHtml += '<div class="card">';
+      queryHtml += '<h2>' + emp.name + ' 的特休狀態　<span style="font-size:12px;color:var(--ink-soft);font-weight:400;">(' + c.label + ')</span></h2>';
+      queryHtml += '<div class="ring-wrap">';
+      queryHtml += '<svg width="140" height="140" viewBox="0 0 140 140">' +
+                '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="var(--ring-track)" stroke-width="12"/>' +
+                '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="var(--accent)" stroke-width="12" ' +
+                  'stroke-dasharray="'+dash+' '+circ+'" stroke-linecap="round" ' +
+                  'transform="rotate(-90 70 70)"/>' +
+                '<text x="70" y="66" text-anchor="middle" class="ring-num">' + c.remaining + '</text>' +
+                '<text x="70" y="86" text-anchor="middle" class="ring-label">剩餘天數</text>' +
+              '</svg>';
+      queryHtml += '<div class="stat-grid">';
+      queryHtml += statBox('本期特休天數', c.entitled + ' 天');
+      queryHtml += statBox('已使用', c.used + ' 天');
+      queryHtml += statBox('本期到期日', c.periodEnd);
+      queryHtml += statBox('距離到期', leave.daysUntilExpire + ' 天');
+      queryHtml += statBox('若到期未休完，預估折抵', 'NT$ ' + leave.forecastPay.toLocaleString(), true);
+      queryHtml += '</div></div></div>';
+    }
+
+    if(leave.history && leave.history.length){
+      queryHtml += '<div class="card"><h2>歷年特休紀錄</h2><div class="table-scroll"><table><thead><tr><th>期別</th><th>期間</th><th>應有天數</th><th>已使用</th><th>到期未休</th><th>已折抵金額</th></tr></thead><tbody>';
+      leave.history.forEach(h=>{
+        queryHtml += '<tr><td>'+h.label+'</td><td>'+h.periodStart+' ~ '+h.periodEnd+'</td><td>'+h.entitled+'</td><td>'+h.used+'</td><td>'+h.forfeited+'</td><td>NT$ '+h.forfeitedPay.toLocaleString()+'</td></tr>';
+      });
+      queryHtml += '</tbody></table></div></div>';
+    }
+
+    queryHtml += '<div class="card"><h2>其他假別總覽</h2><div class="table-scroll" id="otherLeaveOverview"><div class="empty">載入中…</div></div></div>';
+
+    queryHtml += '<div class="card"><h2>LINE 通知綁定</h2>' +
+      '<p class="hint">綁定後，請假審核結果會透過 LINE 通知您（跟 Email 通知同時發送）。</p>' +
+      '<button class="ghost" onclick="doGetLineCode(\'emp\')">取得綁定驗證碼</button>' +
+      '<div id="empLineCodeResult"></div></div>';
+
+    const leaveOptions = ['特休'].concat(OTHER_LEAVE_TYPES)
+      .map(t => '<option value="'+t+'">'+t+'</option>').join('');
+
+    const applyHtml =
+      '<div class="card"><h2>請假申請</h2>' +
+      '<label>假別</label>' +
+      '<select id="reqLeaveType" onchange="onLeaveTypeChange()">' + leaveOptions + '</select>' +
+      '<div id="leaveQuotaInfo" style="margin-top:10px;">' +
+        renderQuotaPanel_(leave) +
+      '</div>' +
+      '<div class="row" style="margin-top:12px;">' +
+        '<div><label>開始日</label><input type="date" id="reqStart"></div>' +
+        '<div><label>結束日</label><input type="date" id="reqEnd"></div>' +
+      '</div>' +
+      '<label>事由（選填）</label><textarea id="reqReason" placeholder="例如：家庭旅遊"></textarea>' +
+      '<button class="primary" onclick="doSubmitLeave(this)">送出申請</button>' +
+      '<p class="hint">特休／事假／病假會依剩餘天數自動檢查；婚假／喪假／產假天數僅供參考，交由主管審核判斷。</p>' +
+      '<div id="submitLeaveMsg"></div>' +
+      '</div>' +
+      '<div class="card"><h2>我的請假紀錄</h2><div class="table-scroll" id="myLeaveList"><div class="empty">載入中…</div></div></div>';
+
+    const scheduleHtml =
+      '<div class="card"><h2>排休申請</h2>' +
+      '<p class="hint">店點：' + (emp.branch||'-') + '　職位：' + (emp.position||'-') + '</p>' +
+      '<label>選擇年月</label>' +
+      '<input type="month" id="schedYearMonth" value="' + defaultYearMonth_() + '" onchange="loadMySchedule()">' +
+      '<div id="schedQuotaInfo" style="margin-top:10px;"><div class="empty">載入中…</div></div>' +
+      '<div class="row" style="margin-top:12px;">' +
+        '<div><label>想申請的休假日</label><input type="date" id="schedDate"></div>' +
+      '</div>' +
+      '<button class="primary" onclick="doSubmitDayOff(this)">提交排休申請</button>' +
+      '<p class="hint">如果同一天已經有其他技術師申請排休，系統會提醒您，但仍會送出，最終由主管協調確認。</p>' +
+      '<div id="submitSchedMsg"></div>' +
+      '</div>' +
+      '<div class="card"><h2>我的排休申請</h2><div class="table-scroll" id="mySchedList"><div class="empty">載入中…</div></div></div>';
+
+    const html =
+      '<div class="tabs">' +
+        '<button class="tab-btn active" data-tab="empTabQuery" onclick="switchEmpTab(\'empTabQuery\')">特休查詢</button>' +
+        '<button class="tab-btn" data-tab="empTabApply" onclick="switchEmpTab(\'empTabApply\')">請假申請</button>' +
+        '<button class="tab-btn" data-tab="empTabSchedule" onclick="switchEmpTab(\'empTabSchedule\')">排休申請</button>' +
+      '</div>' +
+      '<div class="tab-content active" id="empTabQuery">' + queryHtml + '</div>' +
+      '<div class="tab-content" id="empTabApply">' + applyHtml + '</div>' +
+      '<div class="tab-content" id="empTabSchedule">' + scheduleHtml + '</div>';
+
+    document.getElementById('empDashboard').innerHTML = html;
+    switchEmpTab(EMP_TARGET_TAB);
+    loadOtherLeaveOverview();
+    loadMyLeaveRequests();
+    loadMySchedule();
+  }
+
+  function defaultYearMonth_(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+
+  function loadMySchedule(){
+    const yearMonth = document.getElementById('schedYearMonth').value;
+    if(!yearMonth) return;
+    document.getElementById('schedQuotaInfo').innerHTML = '<div class="empty">載入中…</div>';
+    document.getElementById('mySchedList').innerHTML = '<div class="empty">載入中…</div>';
+    google.script.run
+      .withSuccessHandler(function(res){
+        let quotaHtml = '';
+        if(!res.segments.length){
+          quotaHtml = '<p class="hint">人資尚未設定 ' + yearMonth + ' 的區塊與可休天數，請聯絡 HR。</p>';
+        } else {
+          res.segments.forEach(function(seg){
+            quotaHtml += '<p class="hint" style="margin-bottom:4px;"><strong>' + seg.segment + ' 區（' + seg.startDate + ' ~ ' + seg.endDate + '）</strong></p>' +
+              '<div class="stat-grid" style="margin-bottom:12px;">' +
+                statBox('可休天數', seg.quota + ' 天') +
+                statBox('已申請', seg.used + ' 天') +
+                statBox('剩餘可申請', Math.max(0, seg.quota - seg.used) + ' 天', true) +
+              '</div>';
+          });
+        }
+        if(res.closureWeekday !== null){
+          const weekdayNames = ['週日','週一','週二','週三','週四','週五','週六'];
+          quotaHtml += '<p class="hint">' + weekdayNames[res.closureWeekday] + '為固定公休日，不需要另外申請排休。</p>';
+        }
+        if(!res.submissionOpen){
+          quotaHtml += '<p class="hint">⚠ 這個月份尚未開放排休申請，將於 ' + res.openDate + ' 開放。</p>';
+        }
+        document.getElementById('schedQuotaInfo').innerHTML = quotaHtml;
+        document.getElementById('schedDate').disabled = !res.submissionOpen;
+
+        const el = document.getElementById('mySchedList');
+        if(!res.requests.length){ el.innerHTML = '<div class="empty">本月尚無排休申請。</div>'; return; }
+        let html = '<table><thead><tr><th>日期</th><th>狀態</th><th>主管備注</th><th>操作</th></tr></thead><tbody>';
+        res.requests.forEach(r=>{
+          html += '<tr><td>'+r.date+'</td><td>'+badgeHtml(r.status==='待協調'?'待審核':(r.status==='已確認'?'已核准':(r.status==='已拒絕'?'已拒絕':r.status)))+'</td><td>'+(r.note||'-')+'</td>' +
+                  '<td>' + (r.status==='待協調' ? '<button class="small-reject" onclick="doCancelDayOff(\''+r.requestId+'\')">取消</button>' : '-') + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      })
+      .withFailureHandler(function(err){
+        document.getElementById('schedQuotaInfo').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
+      })
+      .getMyDayOffRequests({ nationalId: CURRENT_EMPLOYEE.nationalId, store: CURRENT_EMPLOYEE.branch, yearMonth: yearMonth });
+  }
+
+  function doSubmitDayOff(btn){
+    if(btn && btn.disabled) return;
+    const date = document.getElementById('schedDate').value;
+    if(!date){ showMsg('submitSchedMsg', '請選擇日期。', false); return; }
+    setBtnBusy(btn, true, '送出中…');
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBtnBusy(btn, false);
+        if(res.conflict){
+          showMsg('submitSchedMsg', '申請已送出，但這天已有其他技術師申請排休，主管會協調安排。', true);
+        } else {
+          showMsg('submitSchedMsg', '申請已送出（'+res.segment+'區剩餘可申請 '+res.remaining+' 天）。', true);
+        }
+        document.getElementById('schedDate').value = '';
+        loadMySchedule();
+      })
+      .withFailureHandler(function(err){ setBtnBusy(btn, false); showMsg('submitSchedMsg', err.message || String(err), false); })
+      .submitDayOffRequest({
+        nationalId: CURRENT_EMPLOYEE.nationalId,
+        name: CURRENT_EMPLOYEE.name,
+        store: CURRENT_EMPLOYEE.branch,
+        position: CURRENT_EMPLOYEE.position,
+        date: date
+      });
+  }
+
+  function doCancelDayOff(requestId){
+    if(!confirm('確定要取消這筆排休申請嗎？')) return;
+    google.script.run
+      .withSuccessHandler(function(){ loadMySchedule(); })
+      .withFailureHandler(function(err){ alert(err.message || err); })
+      .cancelDayOffRequest({ nationalId: CURRENT_EMPLOYEE.nationalId, requestId: requestId });
+  }
+
+  function doGetLineCode(who){
+    const resultElId = who === 'hr' ? 'hrLineCodeResult' : 'empLineCodeResult';
+    const payload = who === 'hr' ? { token: ADMIN_TOKEN } : { nationalId: CURRENT_EMPLOYEE.nationalId };
+    document.getElementById(resultElId).innerHTML = '<div class="empty">產生中…</div>';
+    google.script.run
+      .withSuccessHandler(function(res){
+        document.getElementById(resultElId).innerHTML =
+          '<div class="msg ok">驗證碼：<strong style="font-size:18px;">' + res.code + '</strong>　（10 分鐘內有效）</div>' +
+          '<p class="hint">步驟：1. 加官方帳號好友 → <a href="' + res.addFriendUrl + '" target="_blank">點此加入 LINE 好友</a>（或搜尋 ID：' + res.lineOaId + '）　2. 在對話框輸入上面這組驗證碼，即完成綁定。</p>';
+      })
+      .withFailureHandler(function(err){
+        document.getElementById(resultElId).innerHTML = '<div class="msg error">' + (err.message || err) + '</div>';
+      })
+      .generateLineLinkCode(payload);
+  }
+
+  function loadOtherLeaveOverview(){
+    const el = document.getElementById('otherLeaveOverview');
+    if(!el) return;
+    let html = '<table><thead><tr><th>假別</th><th>本期/預設天數</th><th>已用</th><th>剩餘／備注</th></tr></thead><tbody>';
+    OTHER_LEAVE_TYPES.forEach(type=>{ html += '<tr id="otherLeaveRow_'+type+'"><td>'+type+'</td><td colspan="3">載入中…</td></tr>'; });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+
+    OTHER_LEAVE_TYPES.forEach(type=>{
+      google.script.run
+        .withSuccessHandler(function(quota){
+          const row = document.getElementById('otherLeaveRow_'+type);
+          if(!row) return;
+          if(quota.mode === 'event'){
+            row.innerHTML = '<td>'+type+'</td><td>'+quota.defaultDays+' 天（參考）</td><td>'+quota.usedAllTime+'</td><td>僅供參考，由主管審核</td>';
+          } else {
+            const c = quota.current;
+            row.innerHTML = '<td>'+type+'</td><td>'+c.entitled+'</td><td>'+c.used+'</td><td>'+c.remaining+'（到期 '+c.periodEnd+'）</td>';
+          }
+        })
+        .withFailureHandler(function(err){
+          const row = document.getElementById('otherLeaveRow_'+type);
+          if(row) row.innerHTML = '<td>'+type+'</td><td colspan="3">'+(err.message||err)+'</td>';
+        })
+        .getLeaveQuota(CURRENT_EMPLOYEE.nationalId, type);
+    });
+  }
+
+  function badgeHtml(status){
+    const icons = {'待審核':'○','已核准':'✓','已拒絕':'✕','在職':'●','離職':'–'};
+    return '<span class="badge '+status+'">'+(icons[status]||'')+' '+status+'</span>';
+  }
+
+  function statBox(k, v, accent){
+    return '<div class="stat"><div class="k">'+k+'</div><div class="v'+(accent?' accent':'')+'">'+v+'</div></div>';
+  }
+
+  function renderQuotaPanel_(quota){
+    if(quota.mode === 'event'){
+      return '<p class="hint">'+quota.note+'　（歷史已核准使用：'+quota.usedAllTime+' 天）</p>';
+    }
+    if(quota.eligible === false){
+      return '<p class="hint">'+quota.message+'（預計 '+quota.nextEligibleDate+' 起可申請）</p>';
+    }
+    const c = quota.current;
+    return '<div class="stat-grid">' +
+      statBox('本期天數', c.entitled+' 天') +
+      statBox('已用天數', c.used+' 天') +
+      statBox('剩餘天數', c.remaining+' 天', true) +
+      statBox('到期日', c.periodEnd) +
+      '</div>';
+  }
+
+  function onLeaveTypeChange(){
+    const type = document.getElementById('reqLeaveType').value;
+    const el = document.getElementById('leaveQuotaInfo');
+    el.innerHTML = '<div class="empty">載入中…</div>';
+    google.script.run
+      .withSuccessHandler(function(quota){ el.innerHTML = renderQuotaPanel_(quota); })
+      .withFailureHandler(function(err){ el.innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; })
+      .getLeaveQuota(CURRENT_EMPLOYEE.nationalId, type);
+  }
+
+  function doSubmitLeave(btn){
+    if(btn && btn.disabled) return;
+    const leaveType = document.getElementById('reqLeaveType').value;
+    const startDate = document.getElementById('reqStart').value;
+    const endDate = document.getElementById('reqEnd').value;
+    const reason = document.getElementById('reqReason').value;
+    if(!startDate || !endDate){ showMsg('submitLeaveMsg','請選擇開始與結束日期。', false); return; }
+
+    setBtnBusy(btn, true, '送出中…');
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBtnBusy(btn, false);
+        showMsg('submitLeaveMsg', '申請已送出（'+res.days+' 天），等待審核。', true);
+        google.script.run.withSuccessHandler(function(leave){
+          EMP_TARGET_TAB = 'empTabApply';
+          renderEmpDashboard(CURRENT_EMPLOYEE, leave);
+          document.getElementById('reqLeaveType').value = leaveType;
+          onLeaveTypeChange();
+        }).getLeaveSummary(CURRENT_EMPLOYEE.nationalId);
+      })
+      .withFailureHandler(function(err){ setBtnBusy(btn, false); showMsg('submitLeaveMsg', err.message || String(err), false); })
+      .submitLeaveRequest({
+        nationalId: CURRENT_EMPLOYEE.nationalId,
+        name: CURRENT_EMPLOYEE.name,
+        leaveType: leaveType,
+        startDate: startDate,
+        endDate: endDate,
+        reason: reason
+      });
+  }
+
+  function loadMyLeaveRequests(){
+    google.script.run
+      .withSuccessHandler(function(list){
+        const el = document.getElementById('myLeaveList');
+        if(!el) return;
+        if(!list.length){ el.innerHTML = '<div class="empty">尚無申請紀錄。</div>'; return; }
+        let html = '<table><thead><tr><th>申請日</th><th>假別</th><th>期間</th><th>天數</th><th>事由</th><th>狀態</th></tr></thead><tbody>';
+        list.forEach(r=>{
+          html += '<tr><td>'+r.appliedAt+'</td><td>'+(r.leaveType||'特休')+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+(r.reason||'-')+'</td>' +
+                  '<td>'+badgeHtml(r.status) + (r.status==='已拒絕' && r.rejectReason ? '<div class="hint">'+r.rejectReason+'</div>' : '') + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      })
+      .withFailureHandler(function(err){ console.error(err); })
+      .getMyLeaveRequests(CURRENT_EMPLOYEE.nationalId);
+  }
+
+  /* ---------------- 新進員工資料填寫 ---------------- */
+  function doSubmitNewHire(btn){
+    if(btn && btn.disabled) return;
+    const payload = {
+      branch: nval('n_branch'),
+      employeeType: nval('n_employeeType'),
+      position: nval('n_position'),
+      name: nval('n_name'),
+      nickname: nval('n_nickname'),
+      hireDate: nval('n_hireDate'),
+      nationalId: nval('n_nationalId'),
+      birthDate: nval('n_birthDate'),
+      gender: nval('n_gender'),
+      householdAddress: nval('n_householdAddress'),
+      mailingAddress: nval('n_mailingAddress'),
+      homePhone: nval('n_homePhone'),
+      mobilePhone: nval('n_mobilePhone'),
+      education: nval('n_education'),
+      hometown: nval('n_hometown'),
+      insuranceDate: nval('n_insuranceDate'),
+      salary: nval('n_salary'),
+      emergencyContact: nval('n_emergencyContact'),
+      emergencyRelation: nval('n_emergencyRelation'),
+      emergencyPhone: nval('n_emergencyPhone'),
+      note: nval('n_note'),
+      ig: nval('n_ig'),
+      lineId: nval('n_lineId'),
+      resignDate: nval('n_resignDate'),
+      account: nval('n_account'),
+      email: nval('n_email')
+    };
+    setBtnBusy(btn, true, '送出中…');
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBtnBusy(btn, false);
+        showMsg('newHireMsg', '資料已送出（提交編號：'+res.submissionId+'），請等候人資審核建立。', true);
+        document.querySelectorAll('#panelNewHire input, #panelNewHire select, #panelNewHire textarea').forEach(el=>el.value='');
+      })
+      .withFailureHandler(function(err){ setBtnBusy(btn, false); showMsg('newHireMsg', err.message || String(err), false); })
+      .submitNewHireForm(payload);
+  }
+
+  function nval(id){ return document.getElementById(id).value; }
+
+  /* ---------------- HR / 主管後台 ---------------- */
+  function doAdminLogin(btn){
+    if(btn && btn.disabled) return;
+    const email = document.getElementById('adminEmail').value.trim();
+    setBtnBusy(btn, true, '登入中…');
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBtnBusy(btn, false);
+        if(!res.success){ showMsg('adminLoginMsg', res.message, false); return; }
+        ADMIN_TOKEN = res.token;
+        document.getElementById('adminLoginCard').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'block';
+        document.getElementById('adminWelcome').textContent = '您好，' + (res.name || res.email) + '（審核紀錄會用這個名稱記錄）';
+        loadEmployeeList();
+        loadPendingRequests();
+        loadPendingNewHires();
+      })
+      .withFailureHandler(function(err){ setBtnBusy(btn, false); showMsg('adminLoginMsg', err.message || String(err), false); })
+      .adminLogin(email);
+  }
+
+  function adminLogout(){
+    ADMIN_TOKEN = null;
+    document.getElementById('adminDashboard').style.display = 'none';
+    document.getElementById('adminLoginCard').style.display = 'block';
+    document.getElementById('adminEmail').value = '';
+  }
+
+  function switchAdminTab(tab){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active', c.id===tab));
+    if(tab==='tabList') loadEmployeeList();
+    if(tab==='tabPending') loadPendingRequests();
+    if(tab==='tabNewHire') loadPendingNewHires();
+    if(tab==='tabSchedule'){
+      const ymInput = document.getElementById('schedAdminYearMonth');
+      if(ymInput && !ymInput.value) ymInput.value = defaultYearMonth_();
+    }
+  }
+
+  function doAddEmployee(btn){
+    if(btn && btn.disabled) return;
+    const payload = {
+      token: ADMIN_TOKEN,
+      branch: val('f_branch'),
+      employeeType: val('f_employeeType'),
+      position: val('f_position'),
+      name: val('f_name'),
+      nickname: val('f_nickname'),
+      hireDate: val('f_hireDate'),
+      nationalId: val('f_nationalId'),
+      birthDate: val('f_birthDate'),
+      gender: val('f_gender'),
+      householdAddress: val('f_householdAddress'),
+      mailingAddress: val('f_mailingAddress'),
+      homePhone: val('f_homePhone'),
+      mobilePhone: val('f_mobilePhone'),
+      education: val('f_education'),
+      hometown: val('f_hometown'),
+      insuranceDate: val('f_insuranceDate'),
+      salary: val('f_salary'),
+      emergencyContact: val('f_emergencyContact'),
+      emergencyRelation: val('f_emergencyRelation'),
+      emergencyPhone: val('f_emergencyPhone'),
+      note: val('f_note'),
+      ig: val('f_ig'),
+      lineId: val('f_lineId'),
+      resignDate: val('f_resignDate'),
+      account: val('f_account'),
+      email: val('f_email')
+    };
+    setBtnBusy(btn, true, '新增中…');
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBtnBusy(btn, false);
+        showMsg('addEmpMsg', '新增成功！身份證字號：' + res.nationalId, true);
+        document.querySelectorAll('#tabAdd input, #tabAdd select, #tabAdd textarea').forEach(el=>el.value='');
+        loadEmployeeList();
+      })
+      .withFailureHandler(function(err){ setBtnBusy(btn, false); showMsg('addEmpMsg', err.message || String(err), false); })
+      .addEmployee(payload);
+  }
+
+  function val(id){ return document.getElementById(id).value; }
+
+  function doSyncAllLeaveStats(){
+    document.getElementById('syncStatsMsg').innerHTML = '<div class="empty">同步中…</div>';
+    google.script.run
+      .withSuccessHandler(function(res){
+        showMsg('syncStatsMsg', '已同步 ' + res.count + ' 位員工的特休數據。', true);
+        loadEmployeeList();
+      })
+      .withFailureHandler(function(err){ showMsg('syncStatsMsg', err.message || String(err), false); })
+      .syncAllLeaveStats(ADMIN_TOKEN);
+  }
+
+  function loadEmployeeList(){
+    if(!ADMIN_TOKEN) return;
+    google.script.run
+      .withSuccessHandler(function(list){
+        const el = document.getElementById('empListWrap');
+        if(!list.length){ el.innerHTML = '<div class="empty">尚無員工資料。</div>'; return; }
+        let html = '<table><thead><tr><th>身份證字號</th><th>店點</th><th>職位</th><th>姓名</th><th>暱稱</th><th>到職日</th><th>銀行帳號</th><th>狀態</th><th>本期特休</th><th>已用/剩餘</th><th>到期日</th></tr></thead><tbody>';
+        list.forEach(e=>{
+          const l = e.leave;
+          const cur = l.eligible ? (l.current.used + ' / ' + l.current.remaining) : '-';
+          const exp = l.eligible ? l.current.periodEnd : (l.nextEligibleDate || '-');
+          const entitled = l.eligible ? l.current.entitled : 0;
+          html += '<tr style="cursor:pointer" onclick="openEmployeeDetail(\''+e.nationalId+'\')" title="點選查看/編輯詳細資料">' +
+                  '<td>'+e.nationalId+'</td><td>'+(e.branch||'-')+'</td><td>'+(e.position||'-')+'</td><td>'+e.name+'</td><td>'+(e.nickname||'-')+'</td><td>'+e.hireDate+'</td><td>'+(e.account||'-')+'</td>' +
+                  '<td>'+badgeHtml(e.status)+'</td><td>'+entitled+'</td><td>'+cur+'</td><td>'+exp+'</td></tr>';
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      })
+      .withFailureHandler(function(err){ document.getElementById('empListWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; })
+      .getAllEmployeesForAdmin(ADMIN_TOKEN);
+  }
+
+  function openEmployeeDetail(nationalId){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active', c.id==='tabDetail'));
+    document.getElementById('detailLeaveCard').innerHTML = '<div class="empty">載入中…</div>';
+    google.script.run
+      .withSuccessHandler(function(res){
+        const emp = res.employee;
+        document.getElementById('e_originalNationalId').value = emp.nationalId;
+        ['branch','employeeType','position','name','nickname','hireDate','nationalId','birthDate','gender',
+         'householdAddress','mailingAddress','homePhone','mobilePhone','education','hometown','insuranceDate',
+         'salary','emergencyContact','emergencyRelation','emergencyPhone','note','ig','lineId','resignDate','account','email']
+        .forEach(k => { const el = document.getElementById('e_'+k); if(el) el.value = emp[k] || ''; });
+
+        const l = res.leave;
+        let lh = '<h2>'+emp.name+' 的特休狀態　<span style="font-size:12px;color:var(--ink-soft);font-weight:400;">('+badgeHtml(res.status)+')</span></h2>';
+        if(!l.eligible){
+          lh += '<p class="hint">'+l.message+'（預計 '+l.nextEligibleDate+' 起取得特休）</p>';
+        } else {
+          const c = l.current;
+          lh += '<div class="stat-grid">' +
+                statBox('本期('+c.label+')特休天數', c.entitled+' 天') +
+                statBox('已使用', c.used+' 天') +
+                statBox('剩餘天數', c.remaining+' 天', true) +
+                statBox('本期到期日', c.periodEnd) +
+                '</div>';
+        }
+        document.getElementById('detailLeaveCard').innerHTML = lh;
+        document.getElementById('updateEmpMsg').innerHTML = '';
+      })
+      .withFailureHandler(function(err){
+        document.getElementById('detailLeaveCard').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
+      })
+      .getEmployeeDetail(ADMIN_TOKEN, nationalId);
+  }
+
+  function doUpdateEmployee(btn){
+    if(btn && btn.disabled) return;
+    const payload = {
+      token: ADMIN_TOKEN,
+      originalNationalId: val('e_originalNationalId'),
+      branch: val('e_branch'),
+      employeeType: val('e_employeeType'),
+      position: val('e_position'),
+      name: val('e_name'),
+      nickname: val('e_nickname'),
+      hireDate: val('e_hireDate'),
+      nationalId: val('e_nationalId'),
+      birthDate: val('e_birthDate'),
+      gender: val('e_gender'),
+      householdAddress: val('e_householdAddress'),
+      mailingAddress: val('e_mailingAddress'),
+      homePhone: val('e_homePhone'),
+      mobilePhone: val('e_mobilePhone'),
+      education: val('e_education'),
+      hometown: val('e_hometown'),
+      insuranceDate: val('e_insuranceDate'),
+      salary: val('e_salary'),
+      emergencyContact: val('e_emergencyContact'),
+      emergencyRelation: val('e_emergencyRelation'),
+      emergencyPhone: val('e_emergencyPhone'),
+      note: val('e_note'),
+      ig: val('e_ig'),
+      lineId: val('e_lineId'),
+      resignDate: val('e_resignDate'),
+      account: val('e_account'),
+      email: val('e_email')
+    };
+    setBtnBusy(btn, true, '儲存中…');
+    google.script.run
+      .withSuccessHandler(function(res){
+        setBtnBusy(btn, false);
+        showMsg('updateEmpMsg', '已儲存變更。', true);
+        openEmployeeDetail(res.nationalId);
+      })
+      .withFailureHandler(function(err){ setBtnBusy(btn, false); showMsg('updateEmpMsg', err.message || String(err), false); })
+      .updateEmployee(payload);
+  }
+
+  function loadPendingRequests(){
+    if(!ADMIN_TOKEN) return;
+    google.script.run
+      .withSuccessHandler(function(list){
+        const el = document.getElementById('pendingWrap');
+        if(!list.length){ el.innerHTML = '<div class="empty">目前沒有待審核的假單。</div>'; return; }
+        let html = '<table><thead><tr><th>申請編號</th><th>員工</th><th>假別</th><th>期間</th><th>天數</th><th>事由</th><th>操作</th></tr></thead><tbody>';
+        list.forEach(r=>{
+          html += '<tr><td>'+r.requestId+'</td><td>'+r.name+' ('+r.nationalId+')</td><td>'+(r.leaveType||'特休')+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+(r.reason||'-')+'</td>' +
+                  '<td><button class="small-approve" onclick="doReview(\''+r.requestId+'\',\'approve\',this)">核准</button>' +
+                  '<button class="small-reject" onclick="doReview(\''+r.requestId+'\',\'reject\',this)">拒絕</button></td></tr>';
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      })
+      .withFailureHandler(function(err){ document.getElementById('pendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; })
+      .getPendingRequests(ADMIN_TOKEN);
+  }
+
+  function doReview(requestId, decision, btn){
+    if(btn && btn.disabled) return;
+    let rejectReason = '';
+    if(decision === 'reject'){
+      rejectReason = prompt('請輸入拒絕原因（選填）：') || '';
+    }
+    if(btn) setBtnBusy(btn, true, '處理中…');
+    google.script.run
+      .withSuccessHandler(function(){ loadPendingRequests(); loadEmployeeList(); })
+      .withFailureHandler(function(err){ if(btn) setBtnBusy(btn, false); alert(err.message || err); })
+      .reviewLeaveRequest({ token: ADMIN_TOKEN, requestId: requestId, decision: decision, rejectReason: rejectReason });
+  }
+
+  function loadPendingNewHires(){
+    if(!ADMIN_TOKEN) return;
+    google.script.run
+      .withSuccessHandler(function(list){
+        const el = document.getElementById('newHirePendingWrap');
+        if(!list.length){ el.innerHTML = '<div class="empty">目前沒有待審核的新進員工資料。</div>'; return; }
+        let html = '<table><thead><tr><th>提交編號</th><th>姓名</th><th>身份證字號</th><th>店點</th><th>職位</th><th>到職日</th><th>手機</th><th>操作</th></tr></thead><tbody>';
+        list.forEach(r=>{
+          html += '<tr><td>'+r.submissionId+'</td><td>'+r.name+'</td><td>'+r.nationalId+'</td><td>'+(r.branch||'-')+'</td><td>'+(r.position||'-')+'</td><td>'+r.hireDate+'</td><td>'+(r.mobilePhone||'-')+'</td>' +
+                  '<td><button class="small-approve" onclick="doReviewNewHire(\''+r.submissionId+'\',\'approve\',this)">核准建立</button>' +
+                  '<button class="small-reject" onclick="doReviewNewHire(\''+r.submissionId+'\',\'reject\',this)">忽略</button></td></tr>';
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      })
+      .withFailureHandler(function(err){ document.getElementById('newHirePendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; })
+      .getPendingNewHires(ADMIN_TOKEN);
+  }
+
+  function doReviewNewHire(submissionId, decision, btn){
+    if(btn && btn.disabled) return;
+    if(decision === 'reject' && !confirm('確定要忽略這筆新進員工提交嗎？')) return;
+    const fn = decision === 'approve' ? 'approveNewHire' : 'rejectNewHire';
+    if(btn) setBtnBusy(btn, true, '處理中…');
+    google.script.run
+      .withSuccessHandler(function(){ loadPendingNewHires(); loadEmployeeList(); })
+      .withFailureHandler(function(err){ if(btn) setBtnBusy(btn, false); alert(err.message || err); })
+      [fn]({ token: ADMIN_TOKEN, submissionId: submissionId });
+  }
+
+  function loadStoreSchedule(){
+    const store = document.getElementById('schedAdminStore').value;
+    const yearMonth = document.getElementById('schedAdminYearMonth').value;
+    if(!yearMonth) return;
+    document.getElementById('schedAdminQuotaInfo').innerHTML = '<div class="empty">載入中…</div>';
+    document.getElementById('schedAdminWrap').innerHTML = '<div class="empty">載入中…</div>';
+    google.script.run
+      .withSuccessHandler(function(res){
+        const weekdayNames = ['週日','週一','週二','週三','週四','週五','週六'];
+        let quotaHtml = '';
+        if(!res.segments.length){
+          quotaHtml = '<p class="hint">尚未設定這個月的區塊，請到「排休設定」試算表分頁填寫。</p>';
+        } else {
+          res.segments.forEach(function(seg){
+            quotaHtml += '<p class="hint" style="margin-bottom:4px;"><strong>' + seg.segment + ' 區（' + seg.startDate + ' ~ ' + seg.endDate + '）</strong></p>' +
+              '<div class="stat-grid" style="margin-bottom:12px;">' +
+                statBox('可休天數', seg.quota + ' 天') +
+                statBox('已申請', seg.used + ' 天') +
+              '</div>';
+          });
+        }
+        if(res.closureWeekday !== null){
+          quotaHtml += '<p class="hint">' + weekdayNames[res.closureWeekday] + '為固定公休日。</p>';
+        }
+        document.getElementById('schedAdminQuotaInfo').innerHTML = quotaHtml;
+
+        const el = document.getElementById('schedAdminWrap');
+        if(!res.requests.length){ el.innerHTML = '<div class="empty">這個月還沒有人申請排休。</div>'; return; }
+        let html = '<table><thead><tr><th>日期</th><th>區塊</th><th>姓名</th><th>職位</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
+        res.requests.forEach(r=>{
+          html += '<tr' + (r.conflict ? ' style="background:#F1E9E4;"' : '') + '>' +
+                  '<td>'+r.date+(r.conflict?' ⚠衝突':'')+'</td><td>'+(r.segment||'-')+'</td><td>'+r.name+'</td><td>'+(r.position||'-')+'</td><td>'+badgeHtml(r.status==='待協調'?'待審核':(r.status==='已確認'?'已核准':(r.status==='已拒絕'?'已拒絕':r.status)))+'</td>' +
+                  '<td>' +
+                    '<button class="small-approve" onclick="doReviewSchedule(\''+r.requestId+'\',\'confirm\',this)">確認</button>' +
+                    '<button class="small-reject" onclick="doReviewSchedule(\''+r.requestId+'\',\'adjust\',this)">需調整</button>' +
+                    '<button class="small-reject" onclick="doReviewSchedule(\''+r.requestId+'\',\'reject\',this)">拒絕</button>' +
+                  '</td></tr>';
+        });
+        html += '</tbody></table>';
+        el.innerHTML = html;
+      })
+      .withFailureHandler(function(err){ document.getElementById('schedAdminWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; })
+      .getStoreScheduleForMonth({ token: ADMIN_TOKEN, store: store, yearMonth: yearMonth });
+  }
+
+  function doReviewSchedule(requestId, decision, btn){
+    if(btn && btn.disabled) return;
+    let note = '';
+    if(decision !== 'confirm'){
+      note = prompt('備注（選填，會顯示給員工看）：') || '';
+    }
+    if(btn) setBtnBusy(btn, true, '處理中…');
+    google.script.run
+      .withSuccessHandler(function(){ loadStoreSchedule(); })
+      .withFailureHandler(function(err){ if(btn) setBtnBusy(btn, false); alert(err.message || err); })
+      .reviewDayOffRequest({ token: ADMIN_TOKEN, requestId: requestId, decision: decision, note: note });
+  }
+</script>
+</body>
+</html>

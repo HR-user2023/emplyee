@@ -102,6 +102,9 @@
     .row > *{flex:1; min-width:160px; max-width:100%; overflow:hidden;}
     .row3 > *{flex:1; min-width:130px; max-width:100%; overflow:hidden;}
 
+    .date-select-group{display:flex; gap:6px;}
+    .date-select-group select{flex:1; min-width:0; padding:12px 4px; text-align:center;}
+
     button.primary{
       margin-top:16px; padding:13px 20px; border:none; border-radius:10px;
       background:var(--primary); color:#fff; font-weight:700; font-size:16px; cursor:pointer;
@@ -278,9 +281,9 @@
         </div>
       </div>
       <div class="row3">
-        <div><label>到職日 *</label><input type="date" id="n_hireDate"></div>
-        <div><label>投保日期</label><input type="date" id="n_insuranceDate"></div>
-        <div><label>離職日期</label><input type="date" id="n_resignDate"></div>
+        <div><label>到職日 *</label><div class="date-select-placeholder" data-id="n_hireDate" data-day="true"></div></div>
+        <div><label>投保日期</label><div class="date-select-placeholder" data-id="n_insuranceDate" data-day="true"></div></div>
+        <div><label>離職日期</label><div class="date-select-placeholder" data-id="n_resignDate" data-day="true"></div></div>
       </div>
       <div class="row">
         <div><label>薪資</label><input type="number" id="n_salary" placeholder="例如 40000"></div>
@@ -298,7 +301,7 @@
       </div>
       <div class="row3">
         <div><label>身份證字號 *</label><input id="n_nationalId" placeholder="A123456789"></div>
-        <div><label>出生年月日</label><input type="date" id="n_birthDate"></div>
+        <div><label>出生年月日</label><div class="date-select-placeholder" data-id="n_birthDate" data-day="true"></div></div>
         <div><label>學歷</label><input id="n_education"></div>
       </div>
       <div><label>籍貫</label><input id="n_hometown"></div>
@@ -394,9 +397,9 @@
             </div>
           </div>
           <div class="row3">
-            <div><label>到職日 *</label><input type="date" id="f_hireDate"></div>
-            <div><label>投保日期</label><input type="date" id="f_insuranceDate"></div>
-            <div><label>離職日期</label><input type="date" id="f_resignDate"></div>
+            <div><label>到職日 *</label><div class="date-select-placeholder" data-id="f_hireDate" data-day="true"></div></div>
+            <div><label>投保日期</label><div class="date-select-placeholder" data-id="f_insuranceDate" data-day="true"></div></div>
+            <div><label>離職日期</label><div class="date-select-placeholder" data-id="f_resignDate" data-day="true"></div></div>
           </div>
           <div class="row">
             <div><label>薪資（用於折抵金額試算）</label><input type="number" id="f_salary" placeholder="例如 40000"></div>
@@ -414,7 +417,7 @@
           </div>
           <div class="row3">
             <div><label>身份證字號 *（作為唯一識別）</label><input id="f_nationalId" placeholder="A123456789"></div>
-            <div><label>出生年月日</label><input type="date" id="f_birthDate"></div>
+            <div><label>出生年月日</label><div class="date-select-placeholder" data-id="f_birthDate" data-day="true"></div></div>
             <div><label>學歷</label><input id="f_education"></div>
           </div>
           <div><label>籍貫</label><input id="f_hometown"></div>
@@ -491,7 +494,7 @@
                 <option value="皮卡對眼店">皮卡對眼店</option>
               </select>
             </div>
-            <div><label>年月</label><input type="month" id="schedAdminYearMonth" value=""></div>
+            <div><label>年月</label><div class="date-select-placeholder" data-id="schedAdminYearMonth" data-day="false"></div></div>
           </div>
           <button class="ghost" onclick="loadStoreSchedule()">查詢</button>
           <div id="schedAdminQuotaInfo" style="margin-top:10px;"></div>
@@ -537,9 +540,9 @@
             </div>
           </div>
           <div class="row3">
-            <div><label>到職日 *</label><input type="date" id="e_hireDate"></div>
-            <div><label>投保日期</label><input type="date" id="e_insuranceDate"></div>
-            <div><label>離職日期</label><input type="date" id="e_resignDate"></div>
+            <div><label>到職日 *</label><div class="date-select-placeholder" data-id="e_hireDate" data-day="true"></div></div>
+            <div><label>投保日期</label><div class="date-select-placeholder" data-id="e_insuranceDate" data-day="true"></div></div>
+            <div><label>離職日期</label><div class="date-select-placeholder" data-id="e_resignDate" data-day="true"></div></div>
           </div>
           <div class="row">
             <div><label>薪資（用於折抵金額試算）</label><input type="number" id="e_salary" placeholder="例如 40000"></div>
@@ -557,7 +560,7 @@
           </div>
           <div class="row3">
             <div><label>身份證字號 *（作為唯一識別）</label><input id="e_nationalId"></div>
-            <div><label>出生年月日</label><input type="date" id="e_birthDate"></div>
+            <div><label>出生年月日</label><div class="date-select-placeholder" data-id="e_birthDate" data-day="true"></div></div>
             <div><label>學歷</label><input id="e_education"></div>
           </div>
           <div><label>籍貫</label><input id="e_hometown"></div>

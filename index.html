@@ -229,7 +229,7 @@
   <div class="panel active" id="panelEmp">
 
     <div class="card" id="empLoginCard">
-      <h2>查詢我的特休</h2>
+      <h2 id="empLoginTitle">特休查詢/請假申請</h2>
       <div class="row">
         <div>
           <label>姓名</label>
@@ -240,6 +240,10 @@
           <input id="empNationalId" placeholder="A123456789">
         </div>
       </div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-weight:400;">
+        <input type="checkbox" id="empRememberMe" style="width:auto;">
+        記住我這支裝置的身份，下次打開不用再輸入（請勿在共用裝置上勾選）
+      </label>
       <button class="primary" onclick="doFindEmployee()">查詢</button>
       <div id="empLoginMsg"></div>
     </div>

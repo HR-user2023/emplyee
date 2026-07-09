@@ -43,9 +43,10 @@
       color:var(--ink);
       font-family:'Noto Sans TC', sans-serif;
       -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
     }
     h1,h2,h3{font-family:'Noto Serif TC', serif; margin:0;}
-    .app{max-width:1000px; margin:0 auto; padding:28px 20px 80px;}
+    .app{max-width:1000px; margin:0 auto; padding:28px 20px 80px; overflow-x:hidden;}
 
     header.top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:8px;}
     header.top h1{font-size:22px; color:var(--primary); letter-spacing:.5px;}
@@ -78,14 +79,15 @@
 
     label{display:block; font-size:12.5px; color:var(--ink-soft); margin:12px 0 5px; font-weight:500;}
     input, select, textarea{
-      width:100%; padding:12px 14px; border-radius:9px; border:1px solid var(--border);
+      width:100%; max-width:100%; min-width:0; box-sizing:border-box;
+      padding:12px 14px; border-radius:9px; border:1px solid var(--border);
       font-family:inherit; font-size:16px; background:#FBFBFA; color:var(--ink);
     }
     textarea{resize:vertical; min-height:60px;}
 
     .row{display:flex; gap:14px; flex-wrap:wrap;}
-    .row > *{flex:1; min-width:160px;}
-    .row3 > *{flex:1; min-width:130px;}
+    .row > *{flex:1; min-width:160px; max-width:100%;}
+    .row3 > *{flex:1; min-width:130px; max-width:100%;}
 
     button.primary{
       margin-top:16px; padding:13px 20px; border:none; border-radius:10px;

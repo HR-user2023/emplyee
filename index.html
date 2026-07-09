@@ -84,6 +84,17 @@
       font-family:inherit; font-size:16px; background:#FBFBFA; color:var(--ink);
     }
     textarea{resize:vertical; min-height:60px;}
+    /* iOS Safari 對日期欄位有時候會忽略 width 設定，這裡強制取消它內部的最小寬度 */
+    input[type="date"], input[type="month"]{
+      -webkit-min-logical-width: 0;
+      min-width: 0;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus{
+      outline: none;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 2px rgba(30,42,34,0.15);
+    }
 
     .row{display:flex; gap:14px; flex-wrap:wrap;}
     .row > *{flex:1; min-width:160px; max-width:100%; overflow:hidden;}

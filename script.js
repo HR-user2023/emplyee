@@ -623,14 +623,42 @@ function doSubmitNewHire(btn){
 function nval(id){ return document.getElementById(id).value; }
 
 /* ---------------- HR / 主管後台 ---------------- */
+const SAVED_ADMIN_KEY = 'leaveapp_saved_admin';
+
 function doAdminLogin(btn){
   if(btn && btn.disabled) return;
   const email = document.getElementById('adminEmail').value.trim();
+  const rememberMe = document.getElementById('adminRememberMe').checked;
   setBtnBusy(btn, true, '登入中…');
   callApi('adminLogin', { email: email })
     .then(function(res){
       setBtnBusy(btn, false);
       if(!res.success){ showMsg('adminLoginMsg', res.message, false); return; }
+      ADMIN_TOKEN = res.token;
+      ADMIN_STORES = res.stores || [];
+      if(rememberMe){
+        try{ localStorage.setItem(SAVED_ADMIN_KEY, email); }catch(e){}
+      }
+      document.getElementById('adminLoginCard').style.display = 'none';
+      document.getElementById('adminDashboard').style.display = 'block';
+      document.getElementById('adminWelcome').textContent = '您好，' + (res.name || res.email) + '（審核紀錄會用這個名稱記錄）' +
+        (ADMIN_STORES.length ? '　您負責：' + ADMIN_STORES.join('、') : '');
+      applyAdminStoreRestrictions_();
+      loadEmployeeList();
+      loadPendingRequests();
+      loadPendingNewHires();
+      identifyOneSignalHR_();
+    })
+    .catch(function(err){ setBtnBusy(btn, false); showMsg('adminLoginMsg', err.message || String(err), false); });
+}
+
+function tryAutoLoginAdmin_(){
+  let savedEmail;
+  try{ savedEmail = localStorage.getItem(SAVED_ADMIN_KEY); }catch(e){ savedEmail = null; }
+  if(!savedEmail) return;
+  callApi('adminLogin', { email: savedEmail })
+    .then(function(res){
+      if(!res.success) return; // 記住的帳號已失效，靜默忽略，回到手動輸入
       ADMIN_TOKEN = res.token;
       ADMIN_STORES = res.stores || [];
       document.getElementById('adminLoginCard').style.display = 'none';
@@ -643,7 +671,7 @@ function doAdminLogin(btn){
       loadPendingNewHires();
       identifyOneSignalHR_();
     })
-    .catch(function(err){ setBtnBusy(btn, false); showMsg('adminLoginMsg', err.message || String(err), false); });
+    .catch(function(){ /* 忽略，讓使用者手動輸入 */ });
 }
 
 function applyAdminStoreRestrictions_(){
@@ -697,9 +725,11 @@ function identifyOneSignalHR_(){
 
 function adminLogout(){
   ADMIN_TOKEN = null;
+  try{ localStorage.removeItem(SAVED_ADMIN_KEY); }catch(e){}
   document.getElementById('adminDashboard').style.display = 'none';
   document.getElementById('adminLoginCard').style.display = 'block';
   document.getElementById('adminEmail').value = '';
+  document.getElementById('adminRememberMe').checked = false;
 }
 
 function switchAdminTab(tab){
@@ -1020,3 +1050,4 @@ if ('serviceWorker' in navigator) {
 
 populateAllDateSelects_();
 tryAutoLoginEmployee_();
+tryAutoLoginAdmin_();

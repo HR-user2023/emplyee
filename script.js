@@ -512,7 +512,6 @@ function doSetAdminPassword(btn){
 
 function applyAdminStoreRestrictions_(){
   const isHR = ADMIN_ROLE === 'HR';
-  const isAdminStaff = ADMIN_ROLE === '行政';
 
   if(ADMIN_STORES.length){
     const pendingTabs = document.querySelectorAll('#tabPending .tabs .tab-btn');
@@ -536,11 +535,19 @@ function applyAdminStoreRestrictions_(){
     switchAdminTab('tabList');
   }
 
+  // 待審核假單：HR 不需要（改看全部店點的請假紀錄總覽），主管需要（要審核自己店點），行政不需要（不能審核）
   const pendingTab = document.querySelector('[data-tab="tabPending"]');
-  if(pendingTab) pendingTab.style.display = isAdminStaff ? 'none' : '';
+  const showPending = ADMIN_ROLE === '主管';
+  if(pendingTab) pendingTab.style.display = showPending ? '' : 'none';
+
+  // 請假紀錄總覽：HR/主管/行政都能看，只是範圍不同（HR看全部店點，主管/行政看自己負責店點）
   const storeHistoryTab = document.querySelector('[data-tab="tabStoreLeaveHistory"]');
-  if(storeHistoryTab) storeHistoryTab.style.display = isAdminStaff ? '' : 'none';
-  if(isAdminStaff && document.getElementById('tabPending').classList.contains('active')){
+  if(storeHistoryTab) storeHistoryTab.style.display = '';
+  const titleEl = document.getElementById('storeLeaveHistoryTitle');
+  const hintEl = document.getElementById('storeLeaveHistoryHint');
+  if(titleEl) titleEl.textContent = isHR ? '全部店點請假紀錄' : '本店請假紀錄';
+  if(hintEl) hintEl.textContent = isHR ? '顯示全部店點、指定月份的全部請假紀錄（不限狀態），僅供查看。' : '顯示您負責店點、指定月份的全部請假紀錄（不限狀態），僅供查看。';
+  if(!showPending && document.getElementById('tabPending').classList.contains('active')){
     switchAdminTab('tabStoreLeaveHistory');
   }
 }

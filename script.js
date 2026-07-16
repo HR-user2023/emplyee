@@ -32,28 +32,108 @@ let ADMIN_STORES = [];
 let EMP_TARGET_TAB = 'empTabQuery';
 let SELECTED_SCHED_DATES = [];
 let SCHED_CAL_STATE = { yearMonth: null, segments: [], closureWeekday: null, markers: {} };
-const OTHER_LEAVE_TYPES = ['事假','病假','婚假','喪假','產假'];
+const OTHER_LEAVE_TYPES = ['事假','病假','生理假'];
 
 function switchMode(mode){
-  const isEmp = (mode === 'emp-query' || mode === 'schedule');
+  const isEmp = (mode === 'emp-query');
   document.getElementById('panelEmp').classList.toggle('active', isEmp);
   document.getElementById('panelNewHire').classList.toggle('active', mode==='newhire');
   document.getElementById('panelAdmin').classList.toggle('active', mode==='admin');
   document.getElementById('btnModeEmpQuery').classList.toggle('active', mode==='emp-query');
-  document.getElementById('btnModeSchedule').classList.toggle('active', mode==='schedule');
   document.getElementById('btnModeNewHire').classList.toggle('active', mode==='newhire');
   document.getElementById('btnModeAdmin').classList.toggle('active', mode==='admin');
   if(isEmp){
-    EMP_TARGET_TAB = (mode === 'schedule') ? 'empTabSchedule' : 'empTabQuery';
+    EMP_TARGET_TAB = 'empTabQuery';
     if(CURRENT_EMPLOYEE) switchEmpTab(EMP_TARGET_TAB);
     const loginTitle = document.getElementById('empLoginTitle');
-    if(loginTitle) loginTitle.textContent = (mode === 'schedule') ? '登入排休系統' : '特休查詢/請假申請';
+    if(loginTitle) loginTitle.textContent = '特休查詢/請假申請';
   }
 }
 
 function switchEmpTab(tab){
   document.querySelectorAll('#empDashboard .tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('#empDashboard .tab-content').forEach(c=>c.classList.toggle('active', c.id===tab));
+}
+
+// ---------- 年/月/日下拉選單（取代手機系統原生日期選擇器，避免跨機型跑版問題）----------
+// 年份顯示民國年，但選項的 value 仍是西元年，內部儲存/計算都維持西元年不受影響
+function buildDateSelectHtml_(idPrefix, includeDay){
+  const currentYear = new Date().getFullYear();
+  let yearOptions = '<option value="">年</option>';
+  for(let y = currentYear + 1; y >= currentYear - 80; y--){
+    yearOptions += '<option value="'+y+'">民國'+(y-1911)+'</option>';
+  }
+  let monthOptions = '<option value="">月</option>';
+  for(let mo = 1; mo <= 12; mo++){
+    const mv = String(mo).padStart(2,'0');
+    monthOptions += '<option value="'+mv+'">'+mo+'</option>';
+  }
+  let html = '<div class="date-select-group">' +
+    '<select id="'+idPrefix+'_y">'+yearOptions+'</select>' +
+    '<select id="'+idPrefix+'_m">'+monthOptions+'</select>';
+  if(includeDay){
+    let dayOptions = '<option value="">日</option>';
+    for(let d = 1; d <= 31; d++){
+      const dv = String(d).padStart(2,'0');
+      dayOptions += '<option value="'+dv+'">'+d+'</option>';
+    }
+    html += '<select id="'+idPrefix+'_d">'+dayOptions+'</select>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function getDateSelectValue_(idPrefix, includeDay){
+  const yEl = document.getElementById(idPrefix+'_y');
+  const mEl = document.getElementById(idPrefix+'_m');
+  if(!yEl || !mEl) return '';
+  const y = yEl.value, m = mEl.value;
+  if(!y || !m) return '';
+  if(includeDay){
+    const dEl = document.getElementById(idPrefix+'_d');
+    const d = dEl ? dEl.value : '';
+    if(!d) return '';
+    return y+'-'+m+'-'+d;
+  }
+  return y+'-'+m;
+}
+
+function setDateSelectValue_(idPrefix, value, includeDay){
+  if(!value) return;
+  const parts = String(value).split('-');
+  const yEl = document.getElementById(idPrefix+'_y');
+  const mEl = document.getElementById(idPrefix+'_m');
+  if(yEl && parts[0]) yEl.value = parts[0];
+  if(mEl && parts[1]) mEl.value = parts[1];
+  if(includeDay && parts[2]){
+    const dEl = document.getElementById(idPrefix+'_d');
+    if(dEl) dEl.value = parts[2];
+  }
+}
+
+function populateAllDateSelects_(){
+  document.querySelectorAll('.date-select-placeholder').forEach(function(el){
+    const idPrefix = el.dataset.id;
+    const includeDay = el.dataset.day === 'true';
+    if(!document.getElementById(idPrefix+'_y')){
+      el.innerHTML = buildDateSelectHtml_(idPrefix, includeDay);
+    }
+  });
+}
+
+// ---------- 銀行帳號（固定台新銀行812前綴）----------
+function getAccountValue_(idPrefix){
+  const el = document.getElementById(idPrefix+'_account');
+  if(!el) return '';
+  const v = el.value.trim();
+  return v ? ('812' + v) : '';
+}
+
+function setAccountValue_(idPrefix, fullValue){
+  const el = document.getElementById(idPrefix+'_account');
+  if(!el) return;
+  const v = String(fullValue || '');
+  el.value = v.indexOf('812') === 0 ? v.slice(3) : v;
 }
 
 function setBtnBusy(btn, busy, busyText){
@@ -164,11 +244,6 @@ function renderEmpDashboard(emp, leave){
 
   queryHtml += '<div class="card"><h2>其他假別總覽</h2><div class="table-scroll" id="otherLeaveOverview"><div class="empty">載入中…</div></div></div>';
 
-  queryHtml += '<div class="card"><h2>LINE 通知綁定</h2>' +
-    '<p class="hint">綁定後，請假審核結果會透過 LINE 通知您（跟 Email 通知同時發送）。</p>' +
-    '<button class="ghost" onclick="doGetLineCode(\'emp\')">取得綁定驗證碼</button>' +
-    '<div id="empLineCodeResult"></div></div>';
-
   const leaveOptions = ['特休'].concat(OTHER_LEAVE_TYPES)
     .map(t => '<option value="'+t+'">'+t+'</option>').join('');
 
@@ -185,289 +260,19 @@ function renderEmpDashboard(emp, leave){
     '</div>' +
     '<label>事由（選填）</label><textarea id="reqReason" placeholder="例如：家庭旅遊"></textarea>' +
     '<button class="primary" onclick="doSubmitLeave(this)">送出申請</button>' +
-    '<p class="hint">特休／事假／病假會依剩餘天數自動檢查；婚假／喪假／產假天數僅供參考，交由主管審核判斷。</p>' +
+    '<p class="hint">特休／事假／病假／生理假會依剩餘天數自動檢查。</p>' +
     '<div id="submitLeaveMsg"></div>' +
     '</div>' +
     '<div class="card"><h2>我的請假紀錄</h2><div class="table-scroll" id="myLeaveList"><div class="empty">載入中…</div></div></div>';
 
-  const scheduleHtml =
-    '<div class="card"><h2>排休申請</h2>' +
-    '<p class="hint">店點：' + (emp.branch||'-') + '　職位：' + (emp.position||'-') + '</p>' +
-    '<label>選擇年月</label>' +
-    buildDateSelectHtml_('schedYearMonth', false) +
-    '<div id="schedQuotaInfo" style="margin-top:10px;"><div class="empty">載入中…</div></div>' +
-    '<p class="hint">點月曆上的日期就能選取，可以不連續挑選好幾天（例如湊滿本月 8 天），選好後按下方按鈕一次送出。</p>' +
-    '<div id="schedCalendar"></div>' +
-    '<div id="schedSelectedInfo" style="margin-top:10px;"></div>' +
-    '<button class="primary" onclick="doSubmitDayOff(this)">提交已選擇的排休申請</button>' +
-    '<p class="hint">如果選到的日期已經有其他技術師申請排休，系統會提醒您，但仍會送出，最終由主管協調確認。</p>' +
-    '<div id="submitSchedMsg"></div>' +
-    '</div>' +
-    '<div class="card"><h2>我的排休申請</h2><div class="table-scroll" id="mySchedList"><div class="empty">載入中…</div></div></div>';
-
   const html =
     '<p class="hint" style="text-align:right;"><a href="#" onclick="forgetSavedEmployee_();return false;">不是我 / 清除記住的身份</a></p>' +
-    '<div class="tab-content active" id="empTabQuery">' + queryHtml + applyHtml + '</div>' +
-    '<div class="tab-content" id="empTabSchedule">' + scheduleHtml + '</div>';
+    '<div class="tab-content active" id="empTabQuery">' + queryHtml + applyHtml + '</div>';
 
   document.getElementById('empDashboard').innerHTML = html;
   switchEmpTab(EMP_TARGET_TAB);
-  setDateSelectValue_('schedYearMonth', defaultYearMonth_(), false);
-  document.getElementById('schedYearMonth_y').addEventListener('change', loadMySchedule);
-  document.getElementById('schedYearMonth_m').addEventListener('change', loadMySchedule);
   loadOtherLeaveOverview();
   loadMyLeaveRequests();
-  loadMySchedule();
-}
-
-function renderMonthCalendar_(yearMonth, segments, closureWeekday, dayMarkers, selectable){
-  const parts = yearMonth.split('-').map(Number);
-  const y = parts[0], m = parts[1];
-  const firstDay = new Date(y, m-1, 1);
-  const daysInMonth = new Date(y, m, 0).getDate();
-  const startWeekday = firstDay.getDay();
-  const palette = ['#EDEDEA','#D3D3CE','#C0C0BA','#AEAEA7'];
-  const labelColors = {};
-  let colorIdx = 0;
-  function colorForLabel(label){
-    if(!labelColors[label]){ labelColors[label] = palette[colorIdx % palette.length]; colorIdx++; }
-    return labelColors[label];
-  }
-  function findSegment(dateStr){
-    return (segments||[]).find(s => dateStr >= s.startDate && dateStr <= s.endDate);
-  }
-
-  let html = '<div class="cal-grid">';
-  ['日','一','二','三','四','五','六'].forEach(w => html += '<div class="cal-head">'+w+'</div>');
-  for(let i=0;i<startWeekday;i++) html += '<div class="cal-cell cal-empty"></div>';
-  for(let d=1; d<=daysInMonth; d++){
-    const dateStr = yearMonth + '-' + String(d).padStart(2,'0');
-    const weekday = new Date(y,m-1,d).getDay();
-    const isClosure = closureWeekday !== null && closureWeekday !== undefined && weekday === closureWeekday;
-    const seg = findSegment(dateStr);
-    const bg = isClosure ? 'var(--border)' : (seg ? colorForLabel(seg.segment) : '#fff');
-    const marker = (dayMarkers && dayMarkers[dateStr]) ? dayMarkers[dateStr] : '';
-    const canClick = selectable && !isClosure;
-    const isSelected = canClick && SELECTED_SCHED_DATES.indexOf(dateStr) > -1;
-    const cellStyle = 'background:'+bg+';' + (canClick ? 'cursor:pointer;' : '') + (isSelected ? 'outline:3px solid var(--primary); outline-offset:-3px;' : '');
-    html += '<div class="cal-cell" style="'+cellStyle+'" title="'+dateStr+'"' + (canClick ? ' onclick="toggleSchedDate(\''+dateStr+'\')"' : '') + '>' +
-              '<div class="cal-daynum">'+d+(isClosure?' 休':'')+(isSelected?' ✓':'')+'</div>' +
-              (marker ? '<div class="cal-marker">'+marker+'</div>' : '') +
-            '</div>';
-  }
-  html += '</div>';
-  html += '<div class="cal-legend">';
-  Object.keys(labelColors).forEach(label => {
-    html += '<span class="cal-legend-item"><span class="cal-legend-swatch" style="background:'+labelColors[label]+'"></span>'+label+' 區</span>';
-  });
-  if(closureWeekday !== null && closureWeekday !== undefined){
-    html += '<span class="cal-legend-item"><span class="cal-legend-swatch" style="background:var(--border)"></span>公休</span>';
-  }
-  html += '</div>';
-  return html;
-}
-
-// ---------- 年/月/日下拉選單（取代手機系統原生日期選擇器，避免跨機型跑版問題）----------
-function buildDateSelectHtml_(idPrefix, includeDay){
-  const currentYear = new Date().getFullYear();
-  let yearOptions = '<option value="">年</option>';
-  for(let y = currentYear + 1; y >= currentYear - 80; y--){
-    yearOptions += '<option value="'+y+'">'+y+'</option>';
-  }
-  let monthOptions = '<option value="">月</option>';
-  for(let mo = 1; mo <= 12; mo++){
-    const mv = String(mo).padStart(2,'0');
-    monthOptions += '<option value="'+mv+'">'+mo+'</option>';
-  }
-  let html = '<div class="date-select-group">' +
-    '<select id="'+idPrefix+'_y">'+yearOptions+'</select>' +
-    '<select id="'+idPrefix+'_m">'+monthOptions+'</select>';
-  if(includeDay){
-    let dayOptions = '<option value="">日</option>';
-    for(let d = 1; d <= 31; d++){
-      const dv = String(d).padStart(2,'0');
-      dayOptions += '<option value="'+dv+'">'+d+'</option>';
-    }
-    html += '<select id="'+idPrefix+'_d">'+dayOptions+'</select>';
-  }
-  html += '</div>';
-  return html;
-}
-
-function getDateSelectValue_(idPrefix, includeDay){
-  const yEl = document.getElementById(idPrefix+'_y');
-  const mEl = document.getElementById(idPrefix+'_m');
-  if(!yEl || !mEl) return '';
-  const y = yEl.value, m = mEl.value;
-  if(!y || !m) return '';
-  if(includeDay){
-    const dEl = document.getElementById(idPrefix+'_d');
-    const d = dEl ? dEl.value : '';
-    if(!d) return '';
-    return y+'-'+m+'-'+d;
-  }
-  return y+'-'+m;
-}
-
-function setDateSelectValue_(idPrefix, value, includeDay){
-  if(!value) return;
-  const parts = String(value).split('-');
-  const yEl = document.getElementById(idPrefix+'_y');
-  const mEl = document.getElementById(idPrefix+'_m');
-  if(yEl && parts[0]) yEl.value = parts[0];
-  if(mEl && parts[1]) mEl.value = parts[1];
-  if(includeDay && parts[2]){
-    const dEl = document.getElementById(idPrefix+'_d');
-    if(dEl) dEl.value = parts[2];
-  }
-}
-
-function populateAllDateSelects_(){
-  document.querySelectorAll('.date-select-placeholder').forEach(function(el){
-    const idPrefix = el.dataset.id;
-    const includeDay = el.dataset.day === 'true';
-    if(!document.getElementById(idPrefix+'_y')){
-      el.innerHTML = buildDateSelectHtml_(idPrefix, includeDay);
-    }
-  });
-}
-
-function defaultYearMonth_(){
-  const d = new Date();
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-}
-
-function loadMySchedule(){
-  const yearMonth = getDateSelectValue_('schedYearMonth', false);
-  if(!yearMonth) return;
-  SELECTED_SCHED_DATES = []; // 換月份時清空已選擇的日期
-  document.getElementById('schedQuotaInfo').innerHTML = '<div class="empty">載入中…</div>';
-  document.getElementById('mySchedList').innerHTML = '<div class="empty">載入中…</div>';
-  callApi('getMyDayOffRequests', { nationalId: CURRENT_EMPLOYEE.nationalId, store: CURRENT_EMPLOYEE.branch, yearMonth: yearMonth })
-    .then(function(res){
-      let quotaHtml = '';
-      if(!res.labelSummary.length){
-        quotaHtml = '<p class="hint">人資尚未設定 ' + yearMonth + ' 的區塊與可休天數，請聯絡 HR。</p>';
-      } else {
-        res.labelSummary.forEach(function(pool){
-          quotaHtml += '<p class="hint" style="margin-bottom:4px;"><strong>' + pool.segment + ' 區</strong></p>' +
-            '<div class="stat-grid" style="margin-bottom:12px;">' +
-              statBox('可休天數', pool.quota + ' 天') +
-              statBox('已申請', pool.used + ' 天') +
-              statBox('剩餘可申請', Math.max(0, pool.quota - pool.used) + ' 天', true) +
-            '</div>';
-        });
-      }
-      if(res.closureWeekday !== null){
-        const weekdayNames = ['週日','週一','週二','週三','週四','週五','週六'];
-        quotaHtml += '<p class="hint">' + weekdayNames[res.closureWeekday] + '為固定公休日，不需要另外申請排休。</p>';
-      }
-      if(!res.submissionOpen){
-        quotaHtml += '<p class="hint">⚠ 這個月份尚未開放排休申請，將於 ' + res.openDate + ' 開放。</p>';
-      }
-      document.getElementById('schedQuotaInfo').innerHTML = quotaHtml;
-
-      const markers = {};
-      (res.storeRequests || []).forEach(function(r){
-        const icon = r.isMe ? '● ' : '○ ';
-        const line = icon + r.nickname;
-        markers[r.date] = markers[r.date] ? (markers[r.date] + '<br>' + line) : line;
-      });
-      SCHED_CAL_STATE = { yearMonth: yearMonth, segments: res.segments, closureWeekday: res.closureWeekday, markers: markers, submissionOpen: res.submissionOpen };
-      renderSchedCalendarWithSelection_();
-
-      const el = document.getElementById('mySchedList');
-      if(!res.requests.length){ el.innerHTML = '<div class="empty">本月尚無排休申請。</div>'; return; }
-      let html2 = '<table><thead><tr><th>日期</th><th>狀態</th><th>主管備注</th><th>操作</th></tr></thead><tbody>';
-      res.requests.forEach(r=>{
-        html2 += '<tr><td>'+r.date+'</td><td>'+badgeHtml(r.status==='待協調'?'待審核':(r.status==='已確認'?'已核准':(r.status==='已拒絕'?'已拒絕':r.status)))+'</td><td>'+(r.note||'-')+'</td>' +
-                '<td>' + (r.status==='待協調' ? '<button class="small-reject" onclick="doCancelDayOff(\''+r.requestId+'\')">取消</button>' : '-') + '</td></tr>';
-      });
-      html2 += '</tbody></table>';
-      el.innerHTML = html2;
-    })
-    .catch(function(err){ document.getElementById('schedQuotaInfo').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
-}
-
-function renderSchedCalendarWithSelection_(){
-  const s = SCHED_CAL_STATE;
-  if(!s.yearMonth) return;
-  document.getElementById('schedCalendar').innerHTML = renderMonthCalendar_(s.yearMonth, s.segments, s.closureWeekday, s.markers, !!s.submissionOpen);
-  updateSelectedDatesUI_();
-}
-
-function toggleSchedDate(dateStr){
-  if(!SCHED_CAL_STATE.submissionOpen) return;
-  const idx = SELECTED_SCHED_DATES.indexOf(dateStr);
-  if(idx > -1) SELECTED_SCHED_DATES.splice(idx, 1);
-  else SELECTED_SCHED_DATES.push(dateStr);
-  SELECTED_SCHED_DATES.sort();
-  renderSchedCalendarWithSelection_();
-}
-
-function updateSelectedDatesUI_(){
-  const el = document.getElementById('schedSelectedInfo');
-  if(!el) return;
-  if(!SELECTED_SCHED_DATES.length){
-    el.innerHTML = '<p class="hint">尚未選擇任何日期。</p>';
-    return;
-  }
-  el.innerHTML = '<p class="hint"><strong>已選擇 ' + SELECTED_SCHED_DATES.length + ' 天：</strong>' + SELECTED_SCHED_DATES.join('、') +
-    '　<a href="#" onclick="clearSchedSelection_();return false;">清空</a></p>';
-}
-
-function clearSchedSelection_(){
-  SELECTED_SCHED_DATES = [];
-  renderSchedCalendarWithSelection_();
-}
-
-function doSubmitDayOff(btn){
-  if(btn && btn.disabled) return;
-  if(!SELECTED_SCHED_DATES.length){ showMsg('submitSchedMsg', '請先點月曆選擇至少一天。', false); return; }
-  setBtnBusy(btn, true, '送出中…');
-  callApi('submitDayOffRequest', {
-    nationalId: CURRENT_EMPLOYEE.nationalId,
-    name: CURRENT_EMPLOYEE.name,
-    store: CURRENT_EMPLOYEE.branch,
-    position: CURRENT_EMPLOYEE.position,
-    dates: SELECTED_SCHED_DATES
-  })
-    .then(function(res){
-      setBtnBusy(btn, false);
-      let msg = '申請已送出：' + res.submittedDates.join('、') + '（共 ' + res.submittedDates.length + ' 天）。';
-      if(res.skippedClosureDates && res.skippedClosureDates.length){
-        msg += ' 已自動略過公休日：' + res.skippedClosureDates.join('、') + '。';
-      }
-      if(res.conflictDates && res.conflictDates.length){
-        msg += ' 其中 ' + res.conflictDates.join('、') + ' 已有其他技術師申請，主管會協調安排。';
-      }
-      showMsg('submitSchedMsg', msg, true);
-      SELECTED_SCHED_DATES = [];
-      loadMySchedule();
-    })
-    .catch(function(err){ setBtnBusy(btn, false); showMsg('submitSchedMsg', err.message || String(err), false); });
-}
-
-function doCancelDayOff(requestId){
-  if(!confirm('確定要取消這筆排休申請嗎？')) return;
-  callApi('cancelDayOffRequest', { nationalId: CURRENT_EMPLOYEE.nationalId, requestId: requestId })
-    .then(function(){ loadMySchedule(); })
-    .catch(function(err){ alert(err.message || err); });
-}
-
-function doGetLineCode(who){
-  const resultElId = who === 'hr' ? 'hrLineCodeResult' : 'empLineCodeResult';
-  const payload = who === 'hr' ? { token: ADMIN_TOKEN } : { nationalId: CURRENT_EMPLOYEE.nationalId };
-  document.getElementById(resultElId).innerHTML = '<div class="empty">產生中…</div>';
-  callApi('generateLineLinkCode', payload)
-    .then(function(res){
-      document.getElementById(resultElId).innerHTML =
-        '<div class="msg ok">驗證碼：<strong style="font-size:18px;">' + res.code + '</strong>　（10 分鐘內有效）</div>' +
-        '<p class="hint">步驟：1. 加官方帳號好友 → <a href="' + res.addFriendUrl + '" target="_blank">點此加入 LINE 好友</a>（或搜尋 ID：' + res.lineOaId + '）　2. 在對話框輸入上面這組驗證碼，即完成綁定。</p>';
-    })
-    .catch(function(err){
-      document.getElementById(resultElId).innerHTML = '<div class="msg error">' + (err.message || err) + '</div>';
-    });
 }
 
 function loadOtherLeaveOverview(){
@@ -580,8 +385,20 @@ function loadMyLeaveRequests(){
 }
 
 /* ---------------- 新進員工資料填寫 ---------------- */
+function validateRequiredFields_(prefix){
+  const mobilePhone = document.getElementById(prefix+'_mobilePhone').value.trim();
+  const lineId = document.getElementById(prefix+'_lineId').value.trim();
+  const emergencyPhone = document.getElementById(prefix+'_emergencyPhone').value.trim();
+  if(!mobilePhone) return '個人手機為必填欄位。';
+  if(!lineId) return 'LINE ID 為必填欄位。';
+  if(!emergencyPhone) return '緊急聯絡人手機為必填欄位。';
+  return null;
+}
+
 function doSubmitNewHire(btn){
   if(btn && btn.disabled) return;
+  const validationError = validateRequiredFields_('n');
+  if(validationError){ showMsg('newHireMsg', validationError, false); return; }
   const payload = {
     branch: nval('n_branch'),
     employeeType: nval('n_employeeType'),
@@ -607,7 +424,7 @@ function doSubmitNewHire(btn){
     ig: nval('n_ig'),
     lineId: nval('n_lineId'),
     resignDate: getDateSelectValue_('n_resignDate', true),
-    account: nval('n_account'),
+    account: getAccountValue_('n'),
     email: nval('n_email')
   };
   setBtnBusy(btn, true, '送出中…');
@@ -677,6 +494,7 @@ function tryAutoLoginAdmin_(){
 function applyAdminStoreRestrictions_(){
   if(!ADMIN_STORES.length){
     document.querySelector('[data-tab="tabNewHire"]').style.display = '';
+    document.querySelector('[data-tab="tabAdd"]').style.display = '';
     return;
   }
   const pendingTabs = document.querySelectorAll('#tabPending .tabs .tab-btn');
@@ -689,17 +507,13 @@ function applyAdminStoreRestrictions_(){
   });
   if(firstAllowed) switchPendingStore(firstAllowed);
 
-  const schedSelect = document.getElementById('schedAdminStore');
-  if(schedSelect){
-    Array.from(schedSelect.options).forEach(function(opt){
-      opt.style.display = ADMIN_STORES.indexOf(opt.value) > -1 ? '' : 'none';
-    });
-    if(ADMIN_STORES.indexOf(schedSelect.value) === -1) schedSelect.value = ADMIN_STORES[0];
-  }
-
   const newHireTab = document.querySelector('[data-tab="tabNewHire"]');
   if(newHireTab) newHireTab.style.display = 'none';
-  if(document.getElementById('tabNewHire').classList.contains('active')) switchAdminTab('tabAdd');
+  const addTab = document.querySelector('[data-tab="tabAdd"]');
+  if(addTab) addTab.style.display = 'none';
+  if(document.getElementById('tabNewHire').classList.contains('active') || document.getElementById('tabAdd').classList.contains('active')){
+    switchAdminTab('tabList');
+  }
 }
 
 /* ---------------- OneSignal 推播訂閱設定 ---------------- */
@@ -738,15 +552,12 @@ function switchAdminTab(tab){
   if(tab==='tabList') loadEmployeeList();
   if(tab==='tabPending') loadPendingRequests();
   if(tab==='tabNewHire') loadPendingNewHires();
-  if(tab==='tabSchedule'){
-    if(!getDateSelectValue_('schedAdminYearMonth', false)){
-      setDateSelectValue_('schedAdminYearMonth', defaultYearMonth_(), false);
-    }
-  }
 }
 
 function doAddEmployee(btn){
   if(btn && btn.disabled) return;
+  const validationError = validateRequiredFields_('f');
+  if(validationError){ showMsg('addEmpMsg', validationError, false); return; }
   const payload = {
     token: ADMIN_TOKEN,
     branch: val('f_branch'),
@@ -773,7 +584,7 @@ function doAddEmployee(btn){
     ig: val('f_ig'),
     lineId: val('f_lineId'),
     resignDate: getDateSelectValue_('f_resignDate', true),
-    account: val('f_account'),
+    account: getAccountValue_('f'),
     email: val('f_email')
   };
   setBtnBusy(btn, true, '新增中…');
@@ -831,12 +642,13 @@ function openEmployeeDetail(nationalId){
       document.getElementById('e_originalNationalId').value = emp.nationalId;
       ['branch','employeeType','position','name','nickname','nationalId','gender',
        'householdAddress','mailingAddress','homePhone','mobilePhone','education','hometown',
-       'salary','emergencyContact','emergencyRelation','emergencyPhone','note','ig','lineId','account','email']
+       'salary','emergencyContact','emergencyRelation','emergencyPhone','note','ig','lineId','email']
       .forEach(k => { const el = document.getElementById('e_'+k); if(el) el.value = emp[k] || ''; });
       setDateSelectValue_('e_hireDate', emp.hireDate, true);
       setDateSelectValue_('e_birthDate', emp.birthDate, true);
       setDateSelectValue_('e_insuranceDate', emp.insuranceDate, true);
       setDateSelectValue_('e_resignDate', emp.resignDate, true);
+      setAccountValue_('e', emp.account);
 
       const l = res.leave;
       let lh = '<h2>'+emp.name+' 的特休狀態　<span style="font-size:12px;color:var(--ink-soft);font-weight:400;">('+badgeHtml(res.status)+')</span></h2>';
@@ -861,6 +673,8 @@ function openEmployeeDetail(nationalId){
 
 function doUpdateEmployee(btn){
   if(btn && btn.disabled) return;
+  const validationError = validateRequiredFields_('e');
+  if(validationError){ showMsg('updateEmpMsg', validationError, false); return; }
   const payload = {
     token: ADMIN_TOKEN,
     originalNationalId: val('e_originalNationalId'),
@@ -888,7 +702,7 @@ function doUpdateEmployee(btn){
     ig: val('e_ig'),
     lineId: val('e_lineId'),
     resignDate: getDateSelectValue_('e_resignDate', true),
-    account: val('e_account'),
+    account: getAccountValue_('e'),
     email: val('e_email')
   };
   setBtnBusy(btn, true, '儲存中…');
@@ -971,71 +785,6 @@ function doReviewNewHire(submissionId, decision, btn){
   if(btn) setBtnBusy(btn, true, '處理中…');
   callApi(action, { token: ADMIN_TOKEN, submissionId: submissionId })
     .then(function(){ loadPendingNewHires(); loadEmployeeList(); })
-    .catch(function(err){ if(btn) setBtnBusy(btn, false); alert(err.message || err); });
-}
-
-function loadStoreSchedule(){
-  const store = document.getElementById('schedAdminStore').value;
-  const yearMonth = getDateSelectValue_('schedAdminYearMonth', false);
-  if(!yearMonth) return;
-  document.getElementById('schedAdminQuotaInfo').innerHTML = '<div class="empty">載入中…</div>';
-  document.getElementById('schedAdminWrap').innerHTML = '<div class="empty">載入中…</div>';
-  callApi('getStoreScheduleForMonth', { token: ADMIN_TOKEN, store: store, yearMonth: yearMonth })
-    .then(function(res){
-      const weekdayNames = ['週日','週一','週二','週三','週四','週五','週六'];
-      let quotaHtml = '';
-      if(!res.labelSummary.length){
-        quotaHtml = '<p class="hint">尚未設定這個月的區塊，請到「排休設定」試算表分頁填寫。</p>';
-      } else {
-        res.labelSummary.forEach(function(pool){
-          quotaHtml += '<p class="hint" style="margin-bottom:4px;"><strong>' + pool.segment + ' 區</strong></p>' +
-            '<div class="stat-grid" style="margin-bottom:12px;">' +
-              statBox('可休天數', pool.quota + ' 天') +
-              statBox('已申請（全店合計）', pool.used + ' 天') +
-            '</div>';
-        });
-      }
-      if(res.closureWeekday !== null){
-        quotaHtml += '<p class="hint">' + weekdayNames[res.closureWeekday] + '為固定公休日。</p>';
-      }
-      document.getElementById('schedAdminQuotaInfo').innerHTML = quotaHtml;
-
-      const markers = {};
-      res.requests.forEach(function(r){
-        if(r.status === '已拒絕') return;
-        const icon = r.conflict ? '⚠' : (r.status==='已確認'?'✓':'○');
-        const line = icon + (r.nickname || r.name);
-        markers[r.date] = markers[r.date] ? (markers[r.date] + '<br>' + line) : line;
-      });
-      document.getElementById('schedAdminCalendar').innerHTML = renderMonthCalendar_(yearMonth, res.segments, res.closureWeekday, markers);
-
-      const el = document.getElementById('schedAdminWrap');
-      if(!res.requests.length){ el.innerHTML = '<div class="empty">這個月還沒有人申請排休。</div>'; return; }
-      let html = '<table><thead><tr><th>日期</th><th>區塊</th><th>姓名</th><th>職位</th><th>狀態</th><th>操作</th></tr></thead><tbody>';
-      res.requests.forEach(r=>{
-        html += '<tr' + (r.conflict ? ' style="background:#F1E9E4;"' : '') + '>' +
-                '<td>'+r.date+(r.conflict?' ⚠衝突':'')+'</td><td>'+(r.segment||'-')+'</td><td>'+r.name+'</td><td>'+(r.position||'-')+'</td><td>'+badgeHtml(r.status==='待協調'?'待審核':(r.status==='已確認'?'已核准':(r.status==='已拒絕'?'已拒絕':r.status)))+'</td>' +
-                '<td>' +
-                  '<button class="small-approve" onclick="doReviewSchedule(\''+r.requestId+'\',\'confirm\',this)">確認</button>' +
-                  '<button class="small-reject" onclick="doReviewSchedule(\''+r.requestId+'\',\'adjust\',this)">需調整</button>' +
-                  '<button class="small-reject" onclick="doReviewSchedule(\''+r.requestId+'\',\'reject\',this)">拒絕</button>' +
-                '</td></tr>';
-      });
-      html += '</tbody></table>';
-      el.innerHTML = html;
-    })
-    .catch(function(err){ document.getElementById('schedAdminWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
-}
-
-function doReviewSchedule(requestId, decision, btn){
-  if(btn && btn.disabled) return;
-  let note = '';
-  if(decision !== 'confirm'){
-    note = prompt('備注（選填，會顯示給員工看）：') || '';
-  }
-  if(btn) setBtnBusy(btn, true, '處理中…');
-  callApi('reviewDayOffRequest', { token: ADMIN_TOKEN, requestId: requestId, decision: decision, note: note })
-    .then(function(){ loadStoreSchedule(); })
     .catch(function(err){ if(btn) setBtnBusy(btn, false); alert(err.message || err); });
 }
 

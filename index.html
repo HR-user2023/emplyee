@@ -363,7 +363,7 @@
         <button class="tab-btn active" data-tab="tabAdd" onclick="switchAdminTab('tabAdd')">新增員工</button>
         <button class="tab-btn" data-tab="tabList" onclick="switchAdminTab('tabList')">員工總覽</button>
         <button class="tab-btn" data-tab="tabPending" onclick="switchAdminTab('tabPending')">待審核假單</button>
-        <button class="tab-btn" data-tab="tabStoreLeaveHistory" style="display:none;" onclick="switchAdminTab('tabStoreLeaveHistory')">本店請假紀錄</button>
+        <button class="tab-btn" data-tab="tabStoreLeaveHistory" style="display:none;" onclick="switchAdminTab('tabStoreLeaveHistory')">請假紀錄總覽</button>
         <button class="tab-btn" data-tab="tabNewHire" onclick="switchAdminTab('tabNewHire')">新進員工待審核</button>
         <button class="ghost" style="margin-left:auto;" onclick="adminLogout()">登出</button>
       </div>
@@ -479,8 +479,8 @@
 
       <div class="tab-content" id="tabStoreLeaveHistory">
         <div class="card">
-          <h2>本店請假紀錄</h2>
-          <p class="hint">顯示您負責店點、指定月份的全部請假紀錄（不限狀態），僅供查看。</p>
+          <h2 id="storeLeaveHistoryTitle">請假紀錄總覽</h2>
+          <p class="hint" id="storeLeaveHistoryHint">顯示您負責店點、指定月份的全部請假紀錄（不限狀態），僅供查看。</p>
           <label>選擇年月</label>
           <div class="date-select-placeholder" data-id="storeLeaveHistoryYearMonth" data-day="false"></div>
           <div class="table-scroll" id="storeLeaveHistoryWrap" style="margin-top:12px;"><div class="empty">請選擇年月。</div></div>

@@ -188,6 +188,7 @@
     .badge.待審核{background:#FFFFFF; color:var(--ink-soft); border:1px dashed #B8B8B5;}
     .badge.已核准{background:var(--ink); color:#fff;}
     .badge.已拒絕{background:#EDEDEB; color:var(--ink); border:1px solid #B8B8B5;}
+    .badge.已銷假{background:#F1E9E4; color:var(--ink); border:1px solid #D9C9BC;}
     .badge.在職{background:var(--ink); color:#fff;}
     .badge.離職{background:#EDEDEB; color:var(--ink-soft); border:1px solid var(--border);}
 
@@ -362,6 +363,7 @@
         <button class="tab-btn active" data-tab="tabAdd" onclick="switchAdminTab('tabAdd')">新增員工</button>
         <button class="tab-btn" data-tab="tabList" onclick="switchAdminTab('tabList')">員工總覽</button>
         <button class="tab-btn" data-tab="tabPending" onclick="switchAdminTab('tabPending')">待審核假單</button>
+        <button class="tab-btn" data-tab="tabStoreLeaveHistory" style="display:none;" onclick="switchAdminTab('tabStoreLeaveHistory')">本店請假紀錄</button>
         <button class="tab-btn" data-tab="tabNewHire" onclick="switchAdminTab('tabNewHire')">新進員工待審核</button>
         <button class="ghost" style="margin-left:auto;" onclick="adminLogout()">登出</button>
       </div>
@@ -472,6 +474,16 @@
             <button class="tab-btn" data-store="皮卡對眼店" onclick="switchPendingStore('皮卡對眼店')">皮卡對眼店</button>
           </div>
           <div class="table-scroll" id="pendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabStoreLeaveHistory">
+        <div class="card">
+          <h2>本店請假紀錄</h2>
+          <p class="hint">顯示您負責店點、指定月份的全部請假紀錄（不限狀態），僅供查看。</p>
+          <label>選擇年月</label>
+          <div class="date-select-placeholder" data-id="storeLeaveHistoryYearMonth" data-day="false"></div>
+          <div class="table-scroll" id="storeLeaveHistoryWrap" style="margin-top:12px;"><div class="empty">請選擇年月。</div></div>
         </div>
       </div>
 

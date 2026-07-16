@@ -628,32 +628,55 @@ function doSyncAllLeaveStats(){
     .catch(function(err){ showMsg('syncStatsMsg', err.message || String(err), false); });
 }
 
+let EMP_LIST_CACHE = [];
+
 function loadEmployeeList(){
   if(!ADMIN_TOKEN) return;
   callApi('getAllEmployeesForAdmin', { token: ADMIN_TOKEN })
     .then(function(list){
-      const el = document.getElementById('empListWrap');
-      if(!list.length){ el.innerHTML = '<div class="empty">尚無員工資料。</div>'; return; }
-      let html = '<table><thead><tr><th>身份證字號</th><th>店點</th><th>職位</th><th>姓名</th><th>暱稱</th><th>到職日</th><th>銀行帳號</th><th>狀態</th><th>本期特休</th><th>已用/剩餘</th><th>到期日</th></tr></thead><tbody>';
-      list.forEach(e=>{
-        const l = e.leave;
-        const cur = l.eligible ? (l.current.used + ' / ' + l.current.remaining) : '-';
-        const exp = l.eligible ? l.current.periodEnd : (l.nextEligibleDate || '-');
-        const entitled = l.eligible ? l.current.entitled : 0;
-        html += '<tr style="cursor:pointer" onclick="openEmployeeDetail(\''+e.nationalId+'\')" title="點選查看/編輯詳細資料">' +
-                '<td>'+e.nationalId+'</td><td>'+(e.branch||'-')+'</td><td>'+(e.position||'-')+'</td><td>'+e.name+'</td><td>'+(e.nickname||'-')+'</td><td>'+e.hireDate+'</td><td>'+(e.account||'-')+'</td>' +
-                '<td>'+badgeHtml(e.status)+'</td><td>'+entitled+'</td><td>'+cur+'</td><td>'+exp+'</td></tr>';
-      });
-      html += '</tbody></table>';
-      el.innerHTML = html;
+      EMP_LIST_CACHE = list;
+      renderEmployeeTable_(list);
     })
     .catch(function(err){ document.getElementById('empListWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
 }
+
+function renderEmployeeTable_(list){
+  const el = document.getElementById('empListWrap');
+  if(!list.length){ el.innerHTML = '<div class="empty">尚無符合的員工資料。</div>'; return; }
+  let html = '<table><thead><tr><th>身份證字號</th><th>店點</th><th>職位</th><th>姓名</th><th>暱稱</th><th>到職日</th><th>銀行帳號</th><th>狀態</th><th>本期特休</th><th>已用/剩餘</th><th>到期日</th></tr></thead><tbody>';
+  list.forEach(e=>{
+    const l = e.leave;
+    const cur = l.eligible ? (l.current.used + ' / ' + l.current.remaining) : '-';
+    const exp = l.eligible ? l.current.periodEnd : (l.nextEligibleDate || '-');
+    const entitled = l.eligible ? l.current.entitled : 0;
+    html += '<tr style="cursor:pointer" onclick="openEmployeeDetail(\''+e.nationalId+'\')" title="點選查看/編輯詳細資料">' +
+            '<td>'+e.nationalId+'</td><td>'+(e.branch||'-')+'</td><td>'+(e.position||'-')+'</td><td>'+e.name+'</td><td>'+(e.nickname||'-')+'</td><td>'+e.hireDate+'</td><td>'+(e.account||'-')+'</td>' +
+            '<td>'+badgeHtml(e.status)+'</td><td>'+entitled+'</td><td>'+cur+'</td><td>'+exp+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function filterEmployeeList_(){
+  const kw = document.getElementById('empSearchInput').value.trim().toLowerCase();
+  if(!kw){ renderEmployeeTable_(EMP_LIST_CACHE); return; }
+  const filtered = EMP_LIST_CACHE.filter(e =>
+    (e.name||'').toLowerCase().indexOf(kw) > -1 ||
+    (e.nickname||'').toLowerCase().indexOf(kw) > -1 ||
+    (e.nationalId||'').toLowerCase().indexOf(kw) > -1 ||
+    (e.branch||'').toLowerCase().indexOf(kw) > -1
+  );
+  renderEmployeeTable_(filtered);
+}
+
+let CURRENT_DETAIL_NATIONAL_ID = null;
 
 function openEmployeeDetail(nationalId){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active', c.id==='tabDetail'));
   document.getElementById('detailLeaveCard').innerHTML = '<div class="empty">載入中…</div>';
+  document.getElementById('detailLeaveHistoryWrap').innerHTML = '<div class="empty">載入中…</div>';
+  CURRENT_DETAIL_NATIONAL_ID = nationalId;
   callApi('getEmployeeDetail', { token: ADMIN_TOKEN, nationalId: nationalId })
     .then(function(res){
       const emp = res.employee;
@@ -667,6 +690,26 @@ function openEmployeeDetail(nationalId){
       setDateSelectValue_('e_insuranceDate', emp.insuranceDate, true);
       setDateSelectValue_('e_resignDate', emp.resignDate, true);
       setAccountValue_('e', emp.account);
+
+      const canEdit = !!res.canEdit;
+      document.querySelectorAll('#detailEditCard input, #detailEditCard select, #detailEditCard textarea').forEach(el=>{
+        if(el.id !== 'e_originalNationalId') el.disabled = !canEdit;
+      });
+      const saveBtn = document.querySelector('#detailEditCard button.primary');
+      if(saveBtn) saveBtn.style.display = canEdit ? '' : 'none';
+      let readOnlyNotice = document.getElementById('detailReadOnlyNotice');
+      if(!canEdit){
+        if(!readOnlyNotice){
+          readOnlyNotice = document.createElement('p');
+          readOnlyNotice.id = 'detailReadOnlyNotice';
+          readOnlyNotice.className = 'hint';
+          readOnlyNotice.textContent = '您目前是唯讀模式，只能瀏覽員工資料，如需編輯請聯絡 HR。';
+          document.getElementById('detailEditCard').insertBefore(readOnlyNotice, document.getElementById('detailEditCard').querySelector('.section-title'));
+        }
+      } else if(readOnlyNotice){
+        readOnlyNotice.remove();
+      }
+      document.getElementById('detailManualAddCard').style.display = canEdit ? 'block' : 'none';
 
       const l = res.leave;
       let lh = '<h2>'+emp.name+' 的特休狀態　<span style="font-size:12px;color:var(--ink-soft);font-weight:400;">('+badgeHtml(res.status)+')</span></h2>';
@@ -683,10 +726,55 @@ function openEmployeeDetail(nationalId){
       }
       document.getElementById('detailLeaveCard').innerHTML = lh;
       document.getElementById('updateEmpMsg').innerHTML = '';
+
+      loadEmployeeLeaveHistory_(nationalId);
     })
     .catch(function(err){
       document.getElementById('detailLeaveCard').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
     });
+}
+
+function loadEmployeeLeaveHistory_(nationalId){
+  callApi('getEmployeeLeaveRecords', { token: ADMIN_TOKEN, nationalId: nationalId })
+    .then(function(records){
+      const el = document.getElementById('detailLeaveHistoryWrap');
+      if(!records.length){ el.innerHTML = '<div class="empty">尚無請假紀錄。</div>'; return; }
+      let html = '<table><thead><tr><th>假別</th><th>期間</th><th>天數</th><th>狀態</th><th>事由/備注</th><th>審核人</th></tr></thead><tbody>';
+      records.forEach(r=>{
+        html += '<tr><td>'+r.leaveType+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+badgeHtml(r.status==='待審核'?'待審核':(r.status==='已核准'?'已核准':'已拒絕'))+'</td><td>'+(r.reason||'-')+(r.rejectReason?('<br><span style="color:var(--ink-soft);">拒絕原因：'+r.rejectReason+'</span>'):'')+'</td><td>'+(r.reviewer||'-')+'</td></tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    })
+    .catch(function(err){
+      document.getElementById('detailLeaveHistoryWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
+    });
+}
+
+function doManualAddLeave(btn){
+  if(btn && btn.disabled) return;
+  const leaveType = document.getElementById('manualLeaveType').value;
+  const startDate = getDateSelectValue_('manualStart', true);
+  const endDate = getDateSelectValue_('manualEnd', true);
+  const note = document.getElementById('manualLeaveNote').value.trim();
+  if(!startDate || !endDate){ showMsg('manualAddLeaveMsg', '請選擇開始日與結束日。', false); return; }
+  setBtnBusy(btn, true, '登記中…');
+  callApi('manualAddLeaveRecord', {
+    token: ADMIN_TOKEN,
+    nationalId: CURRENT_DETAIL_NATIONAL_ID,
+    leaveType: leaveType,
+    startDate: startDate,
+    endDate: endDate,
+    note: note
+  })
+    .then(function(res){
+      setBtnBusy(btn, false);
+      showMsg('manualAddLeaveMsg', '已登記（'+res.days+' 天）。', true);
+      document.getElementById('manualLeaveNote').value = '';
+      loadEmployeeLeaveHistory_(CURRENT_DETAIL_NATIONAL_ID);
+      openEmployeeDetail(CURRENT_DETAIL_NATIONAL_ID);
+    })
+    .catch(function(err){ setBtnBusy(btn, false); showMsg('manualAddLeaveMsg', err.message || String(err), false); });
 }
 
 function doUpdateEmployee(btn){

@@ -445,12 +445,17 @@ const SAVED_ADMIN_KEY = 'leaveapp_saved_admin';
 function doAdminLogin(btn){
   if(btn && btn.disabled) return;
   const email = document.getElementById('adminEmail').value.trim();
+  const password = document.getElementById('adminPassword').value;
   const rememberMe = document.getElementById('adminRememberMe').checked;
   setBtnBusy(btn, true, '登入中…');
-  callApi('adminLogin', { email: email })
+  callApi('adminLogin', { email: email, password: password })
     .then(function(res){
       setBtnBusy(btn, false);
-      if(!res.success){ showMsg('adminLoginMsg', res.message, false); return; }
+      if(!res.success){
+        showMsg('adminLoginMsg', res.message, false);
+        if(res.needsPasswordSetup) document.getElementById('adminPasswordSetup').style.display = 'block';
+        return;
+      }
       ADMIN_TOKEN = res.token;
       ADMIN_STORES = res.stores || [];
       if(rememberMe){
@@ -469,26 +474,38 @@ function doAdminLogin(btn){
     .catch(function(err){ setBtnBusy(btn, false); showMsg('adminLoginMsg', err.message || String(err), false); });
 }
 
+// 只預填記住的 Email，密碼每次都要輸入，不會自動略過登入（安全考量）
 function tryAutoLoginAdmin_(){
   let savedEmail;
   try{ savedEmail = localStorage.getItem(SAVED_ADMIN_KEY); }catch(e){ savedEmail = null; }
   if(!savedEmail) return;
-  callApi('adminLogin', { email: savedEmail })
-    .then(function(res){
-      if(!res.success) return; // 記住的帳號已失效，靜默忽略，回到手動輸入
-      ADMIN_TOKEN = res.token;
-      ADMIN_STORES = res.stores || [];
-      document.getElementById('adminLoginCard').style.display = 'none';
-      document.getElementById('adminDashboard').style.display = 'block';
-      document.getElementById('adminWelcome').textContent = '您好，' + (res.name || res.email) + '（審核紀錄會用這個名稱記錄）' +
-        (ADMIN_STORES.length ? '　您負責：' + ADMIN_STORES.join('、') : '');
-      applyAdminStoreRestrictions_();
-      loadEmployeeList();
-      loadPendingRequests();
-      loadPendingNewHires();
-      identifyOneSignalHR_();
+  const el = document.getElementById('adminEmail');
+  if(el) el.value = savedEmail;
+}
+
+function toggleAdminPasswordSetup_(){
+  const el = document.getElementById('adminPasswordSetup');
+  el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+}
+
+function doSetAdminPassword(btn){
+  if(btn && btn.disabled) return;
+  const email = document.getElementById('adminEmail').value.trim();
+  const newPassword = document.getElementById('adminNewPassword').value;
+  const confirmPassword = document.getElementById('adminNewPasswordConfirm').value;
+  if(!email){ showMsg('adminPasswordSetupMsg', '請先在上方填寫您的管理者 Email。', false); return; }
+  if(newPassword.length < 6){ showMsg('adminPasswordSetupMsg', '密碼至少需要 6 個字元。', false); return; }
+  if(newPassword !== confirmPassword){ showMsg('adminPasswordSetupMsg', '兩次輸入的密碼不一致。', false); return; }
+  setBtnBusy(btn, true, '設定中…');
+  callApi('setAdminPassword', { email: email, newPassword: newPassword })
+    .then(function(){
+      setBtnBusy(btn, false);
+      showMsg('adminPasswordSetupMsg', '密碼設定成功，請用新密碼登入。', true);
+      document.getElementById('adminPassword').value = newPassword;
+      document.getElementById('adminNewPassword').value = '';
+      document.getElementById('adminNewPasswordConfirm').value = '';
     })
-    .catch(function(){ /* 忽略，讓使用者手動輸入 */ });
+    .catch(function(err){ setBtnBusy(btn, false); showMsg('adminPasswordSetupMsg', err.message || String(err), false); });
 }
 
 function applyAdminStoreRestrictions_(){
@@ -543,6 +560,7 @@ function adminLogout(){
   document.getElementById('adminDashboard').style.display = 'none';
   document.getElementById('adminLoginCard').style.display = 'block';
   document.getElementById('adminEmail').value = '';
+  document.getElementById('adminPassword').value = '';
   document.getElementById('adminRememberMe').checked = false;
 }
 

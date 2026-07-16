@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
@@ -456,6 +456,8 @@
           <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。特休天數/已用/剩餘天數也會自動同步寫入試算表最後幾欄，方便直接在 Sheet 上查看。</p>
           <button class="ghost" onclick="doSyncAllLeaveStats()">同步全部員工的特休數據到試算表</button>
           <div id="syncStatsMsg"></div>
+          <label>搜尋員工（姓名／暱稱／身份證字號／店點）</label>
+          <input id="empSearchInput" placeholder="輸入關鍵字搜尋…" oninput="filterEmployeeList_()">
           <div class="table-scroll" id="empListWrap"><div class="empty">載入中…</div></div>
         </div>
       </div>
@@ -486,7 +488,32 @@
 
         <div class="card" id="detailLeaveCard"></div>
 
+        <div class="card" id="detailManualAddCard" style="display:none;">
+          <h2>手動登記請假紀錄</h2>
+          <p class="hint">用於補登「沒有在系統內申請、但實際上已經用掉」的假，登記後會直接算作已核准，計入該員工的已用天數。</p>
+          <label>假別</label>
+          <select id="manualLeaveType">
+            <option value="特休">特休</option>
+            <option value="事假">事假</option>
+            <option value="病假">病假</option>
+            <option value="生理假">生理假</option>
+          </select>
+          <div class="row" style="margin-top:12px;">
+            <div><label>開始日</label><div class="date-select-placeholder" data-id="manualStart" data-day="true"></div></div>
+            <div><label>結束日</label><div class="date-select-placeholder" data-id="manualEnd" data-day="true"></div></div>
+          </div>
+          <label>備注（選填）</label>
+          <input id="manualLeaveNote" placeholder="例如：轉入系統前的舊資料">
+          <button class="primary" onclick="doManualAddLeave(this)">登記</button>
+          <div id="manualAddLeaveMsg"></div>
+        </div>
+
         <div class="card">
+          <h2>請假紀錄</h2>
+          <div class="table-scroll" id="detailLeaveHistoryWrap"><div class="empty">載入中…</div></div>
+        </div>
+
+        <div class="card" id="detailEditCard">
           <h2>員工詳細資料</h2>
           <input type="hidden" id="e_originalNationalId">
 

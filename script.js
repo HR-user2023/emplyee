@@ -29,6 +29,7 @@ async function callApi(action, payload) {
 let CURRENT_EMPLOYEE = null;
 let ADMIN_TOKEN = null;
 let ADMIN_STORES = [];
+let ADMIN_ROLE = '';
 let EMP_TARGET_TAB = 'empTabQuery';
 let SELECTED_SCHED_DATES = [];
 let SCHED_CAL_STATE = { yearMonth: null, segments: [], closureWeekday: null, markers: {} };
@@ -458,12 +459,13 @@ function doAdminLogin(btn){
       }
       ADMIN_TOKEN = res.token;
       ADMIN_STORES = res.stores || [];
+      ADMIN_ROLE = res.role || '';
       if(rememberMe){
         try{ localStorage.setItem(SAVED_ADMIN_KEY, email); }catch(e){}
       }
       document.getElementById('adminLoginCard').style.display = 'none';
       document.getElementById('adminDashboard').style.display = 'block';
-      document.getElementById('adminWelcome').textContent = '您好，' + (res.name || res.email) + '（審核紀錄會用這個名稱記錄）' +
+      document.getElementById('adminWelcome').textContent = '您好，' + (res.name || res.email) + '（' + (ADMIN_ROLE||'HR') + '，審核紀錄會用這個名稱記錄）' +
         (ADMIN_STORES.length ? '　您負責：' + ADMIN_STORES.join('、') : '');
       applyAdminStoreRestrictions_();
       loadEmployeeList();
@@ -509,26 +511,27 @@ function doSetAdminPassword(btn){
 }
 
 function applyAdminStoreRestrictions_(){
-  if(!ADMIN_STORES.length){
-    document.querySelector('[data-tab="tabNewHire"]').style.display = '';
-    document.querySelector('[data-tab="tabAdd"]').style.display = '';
-    return;
+  const isHR = ADMIN_ROLE === 'HR';
+
+  if(ADMIN_STORES.length){
+    const pendingTabs = document.querySelectorAll('#tabPending .tabs .tab-btn');
+    let firstAllowed = null;
+    pendingTabs.forEach(function(btn){
+      const store = btn.dataset.store;
+      const allowed = store === '全部' ? false : ADMIN_STORES.indexOf(store) > -1;
+      btn.style.display = allowed ? '' : 'none';
+      if(allowed && !firstAllowed) firstAllowed = store;
+    });
+    if(firstAllowed) switchPendingStore(firstAllowed);
+  } else {
+    document.querySelectorAll('#tabPending .tabs .tab-btn').forEach(function(btn){ btn.style.display = ''; });
   }
-  const pendingTabs = document.querySelectorAll('#tabPending .tabs .tab-btn');
-  let firstAllowed = null;
-  pendingTabs.forEach(function(btn){
-    const store = btn.dataset.store;
-    const allowed = store === '全部' ? false : ADMIN_STORES.indexOf(store) > -1;
-    btn.style.display = allowed ? '' : 'none';
-    if(allowed && !firstAllowed) firstAllowed = store;
-  });
-  if(firstAllowed) switchPendingStore(firstAllowed);
 
   const newHireTab = document.querySelector('[data-tab="tabNewHire"]');
-  if(newHireTab) newHireTab.style.display = 'none';
+  if(newHireTab) newHireTab.style.display = isHR ? '' : 'none';
   const addTab = document.querySelector('[data-tab="tabAdd"]');
-  if(addTab) addTab.style.display = 'none';
-  if(document.getElementById('tabNewHire').classList.contains('active') || document.getElementById('tabAdd').classList.contains('active')){
+  if(addTab) addTab.style.display = isHR ? '' : 'none';
+  if(!isHR && (document.getElementById('tabNewHire').classList.contains('active') || document.getElementById('tabAdd').classList.contains('active'))){
     switchAdminTab('tabList');
   }
 }
@@ -844,11 +847,14 @@ function renderPendingTable(){
   const el = document.getElementById('pendingWrap');
   const list = PENDING_STORE_FILTER === '全部' ? PENDING_REQUESTS_ALL : PENDING_REQUESTS_ALL.filter(r => r.branch === PENDING_STORE_FILTER);
   if(!list.length){ el.innerHTML = '<div class="empty">目前沒有待審核的假單。</div>'; return; }
+  const canReview = ADMIN_ROLE !== '行政';
   let html = '<table><thead><tr><th>申請編號</th><th>店點</th><th>員工</th><th>假別</th><th>期間</th><th>天數</th><th>事由</th><th>操作</th></tr></thead><tbody>';
   list.forEach(r=>{
     html += '<tr><td>'+r.requestId+'</td><td>'+(r.branch||'-')+'</td><td>'+r.name+' ('+r.nationalId+')</td><td>'+(r.leaveType||'特休')+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+(r.reason||'-')+'</td>' +
-            '<td><button class="small-approve" onclick="doReview(\''+r.requestId+'\',\'approve\',this)">核准</button>' +
-            '<button class="small-reject" onclick="doReview(\''+r.requestId+'\',\'reject\',this)">拒絕</button></td></tr>';
+            '<td>' + (canReview ?
+              '<button class="small-approve" onclick="doReview(\''+r.requestId+'\',\'approve\',this)">核准</button>' +
+              '<button class="small-reject" onclick="doReview(\''+r.requestId+'\',\'reject\',this)">拒絕</button>'
+              : '<span class="hint">僅供查看</span>') + '</td></tr>';
   });
   html += '</tbody></table>';
   el.innerHTML = html;

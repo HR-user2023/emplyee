@@ -43,9 +43,10 @@
       color:var(--ink);
       font-family:'Noto Sans TC', sans-serif;
       -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
     }
     h1,h2,h3{font-family:'Noto Serif TC', serif; margin:0;}
-    .app{max-width:1000px; margin:0 auto; padding:28px 20px 80px;}
+    .app{max-width:1000px; margin:0 auto; padding:28px 20px 80px; overflow-x:hidden;}
 
     header.top{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:8px;}
     header.top h1{font-size:22px; color:var(--primary); letter-spacing:.5px;}
@@ -78,14 +79,35 @@
 
     label{display:block; font-size:12.5px; color:var(--ink-soft); margin:12px 0 5px; font-weight:500;}
     input, select, textarea{
-      width:100%; padding:12px 14px; border-radius:9px; border:1px solid var(--border);
+      width:100%; max-width:100%; min-width:0; box-sizing:border-box;
+      padding:12px 14px; border-radius:9px; border:1px solid var(--border);
       font-family:inherit; font-size:16px; background:#FBFBFA; color:var(--ink);
     }
     textarea{resize:vertical; min-height:60px;}
+    /* iOS Safari 對日期欄位有時候會忽略 width 設定，這裡強制取消它內部的最小寬度 */
+    input[type="date"], input[type="month"]{
+      -webkit-min-logical-width: 0;
+      min-width: 0;
+      width: 100%;
+      max-width: calc(100vw - 64px);
+      box-sizing: border-box;
+    }
+    input:focus, select:focus, textarea:focus{
+      outline: none;
+      border-color: var(--ink);
+      box-shadow: 0 0 0 2px rgba(30,42,34,0.15);
+    }
 
     .row{display:flex; gap:14px; flex-wrap:wrap;}
-    .row > *{flex:1; min-width:160px;}
-    .row3 > *{flex:1; min-width:130px;}
+    .row > *{flex:1; min-width:160px; max-width:100%; overflow:hidden;}
+    .row3 > *{flex:1; min-width:130px; max-width:100%; overflow:hidden;}
+
+    .account-input-group{display:flex; align-items:stretch; max-width:100%;}
+    .account-prefix{background:var(--border); padding:0 12px; border-radius:9px 0 0 9px; font-weight:700; border:1px solid var(--border); border-right:none; display:flex; align-items:center; white-space:nowrap; flex-shrink:0;}
+    .account-input-group input{border-radius:0 9px 9px 0; flex:1; min-width:0; width:auto;}
+
+    .date-select-group{display:flex; gap:6px; max-width:100%;}
+    .date-select-group select{flex:1; min-width:0; width:auto; padding:12px 4px; text-align:center;}
 
     button.primary{
       margin-top:16px; padding:13px 20px; border:none; border-radius:10px;
@@ -143,6 +165,9 @@
       .tab-btn{font-size:15px; padding:11px 14px;}
       .ring-label{font-size:13px;}
       .ring-wrap{gap:16px;}
+      .date-select-group{gap:4px;}
+      .date-select-group select{padding:12px 2px; font-size:15px;}
+      .account-prefix{padding:0 8px;}
     }
 
     /* ---- 年輪 (growth-ring) 特休進度視覺化 ---- */
@@ -163,6 +188,7 @@
     .badge.待審核{background:#FFFFFF; color:var(--ink-soft); border:1px dashed #B8B8B5;}
     .badge.已核准{background:var(--ink); color:#fff;}
     .badge.已拒絕{background:#EDEDEB; color:var(--ink); border:1px solid #B8B8B5;}
+    .badge.已銷假{background:#F1E9E4; color:var(--ink); border:1px solid #D9C9BC;}
     .badge.在職{background:var(--ink); color:#fff;}
     .badge.離職{background:#EDEDEB; color:var(--ink-soft); border:1px solid var(--border);}
 
@@ -195,7 +221,7 @@
   <div class="panel active" id="panelEmp">
 
     <div class="card" id="empLoginCard">
-      <h2>查詢我的特休</h2>
+      <h2 id="empLoginTitle">特休查詢/請假申請</h2>
       <div class="row">
         <div>
           <label>姓名</label>
@@ -206,6 +232,10 @@
           <input id="empNationalId" placeholder="A123456789">
         </div>
       </div>
+      <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-weight:400;">
+        <input type="checkbox" id="empRememberMe" style="width:auto;">
+        記住我這支裝置的身份，下次打開不用再輸入（請勿在共用裝置上勾選）
+      </label>
       <button class="primary" onclick="doFindEmployee()">查詢</button>
       <div id="empLoginMsg"></div>
     </div>
@@ -231,9 +261,7 @@
         </div>
         <div><label>員工類型</label>
           <select id="n_employeeType">
-            <option value="">請選擇</option>
-            <option>PT</option>
-            <option>正職</option>
+            <option value="正職" selected>正職</option>
           </select>
         </div>
         <div><label>職位</label>
@@ -247,13 +275,13 @@
         </div>
       </div>
       <div class="row3">
-        <div><label>到職日 *</label><input type="date" id="n_hireDate"></div>
-        <div><label>投保日期</label><input type="date" id="n_insuranceDate"></div>
-        <div><label>離職日期</label><input type="date" id="n_resignDate"></div>
+        <div><label>到職日 *</label><div class="date-select-placeholder" data-id="n_hireDate" data-day="true"></div></div>
+        <div><label>投保日期</label><div class="date-select-placeholder" data-id="n_insuranceDate" data-day="true"></div></div>
+        <div><label>離職日期</label><div class="date-select-placeholder" data-id="n_resignDate" data-day="true"></div></div>
       </div>
       <div class="row">
         <div><label>薪資</label><input type="number" id="n_salary" placeholder="例如 40000"></div>
-        <div><label>銀行帳號</label><input id="n_account" placeholder="薪資轉帳用"></div>
+        <div><label>銀行帳號（僅限台新銀行）</label><div class="account-input-group"><span class="account-prefix">812</span><input id="n_account" placeholder="後面帳號數字"></div></div>
       </div>
       <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="n_email" placeholder="you@example.com"></div>
 
@@ -267,7 +295,7 @@
       </div>
       <div class="row3">
         <div><label>身份證字號 *</label><input id="n_nationalId" placeholder="A123456789"></div>
-        <div><label>出生年月日</label><input type="date" id="n_birthDate"></div>
+        <div><label>出生年月日</label><div class="date-select-placeholder" data-id="n_birthDate" data-day="true"></div></div>
         <div><label>學歷</label><input id="n_education"></div>
       </div>
       <div><label>籍貫</label><input id="n_hometown"></div>
@@ -279,18 +307,18 @@
       </div>
       <div class="row">
         <div><label>家用電話</label><input id="n_homePhone"></div>
-        <div><label>個人手機</label><input id="n_mobilePhone"></div>
+        <div><label>個人手機 *</label><input id="n_mobilePhone"></div>
       </div>
       <div class="row">
         <div><label>IG</label><input id="n_ig"></div>
-        <div><label>LINE ID</label><input id="n_lineId"></div>
+        <div><label>LINE ID *</label><input id="n_lineId"></div>
       </div>
 
       <div class="section-title">緊急聯絡人</div>
       <div class="row3">
         <div><label>緊急聯絡人</label><input id="n_emergencyContact"></div>
         <div><label>關係</label><input id="n_emergencyRelation"></div>
-        <div><label>緊急聯絡人手機</label><input id="n_emergencyPhone"></div>
+        <div><label>緊急聯絡人手機 *</label><input id="n_emergencyPhone"></div>
       </div>
 
       <div class="section-title">備注</div>
@@ -308,26 +336,35 @@
       <h2>管理者登入</h2>
       <label>管理者 Email（需在白名單內）</label>
       <input id="adminEmail" placeholder="hr@company.com">
+      <label>密碼</label>
+      <input type="password" id="adminPassword" placeholder="請輸入密碼">
+      <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-weight:400;">
+        <input type="checkbox" id="adminRememberMe" style="width:auto;">
+        記住我的 Email（下次自動帶入，仍需輸入密碼；請勿在共用裝置上勾選）
+      </label>
       <button class="primary" onclick="doAdminLogin(this)">登入</button>
       <div id="adminLoginMsg"></div>
+      <p class="hint" style="margin-top:14px;"><a href="#" onclick="toggleAdminPasswordSetup_();return false;">第一次使用或忘記密碼？點此設定新密碼</a></p>
+      <div id="adminPasswordSetup" style="display:none; margin-top:10px; padding-top:14px; border-top:1px solid var(--border);">
+        <p class="hint">只要 Email 在白名單內就能設定新密碼（不需要輸入舊密碼），請自行妥善保管，避免資料被他人存取或更動。</p>
+        <label>新密碼（至少 6 個字元）</label>
+        <input type="password" id="adminNewPassword" placeholder="設定新密碼">
+        <label>確認新密碼</label>
+        <input type="password" id="adminNewPasswordConfirm" placeholder="再輸入一次">
+        <button class="ghost" onclick="doSetAdminPassword(this)">設定密碼</button>
+        <div id="adminPasswordSetupMsg"></div>
+      </div>
     </div>
 
     <div id="adminDashboard" style="display:none;">
       <p class="hint" id="adminWelcome" style="margin-bottom:14px;"></p>
 
-      <div class="card">
-        <h2>LINE 通知綁定</h2>
-        <p class="hint">綁定後，有新的請假申請時會透過 LINE 通知您（跟 Email 通知同時發送）。</p>
-        <button class="ghost" onclick="doGetLineCode('hr')">取得綁定驗證碼</button>
-        <div id="hrLineCodeResult"></div>
-      </div>
-
       <div class="tabs">
         <button class="tab-btn active" data-tab="tabAdd" onclick="switchAdminTab('tabAdd')">新增員工</button>
         <button class="tab-btn" data-tab="tabList" onclick="switchAdminTab('tabList')">員工總覽</button>
         <button class="tab-btn" data-tab="tabPending" onclick="switchAdminTab('tabPending')">待審核假單</button>
+        <button class="tab-btn" data-tab="tabStoreLeaveHistory" style="display:none;" onclick="switchAdminTab('tabStoreLeaveHistory')">請假紀錄總覽</button>
         <button class="tab-btn" data-tab="tabNewHire" onclick="switchAdminTab('tabNewHire')">新進員工待審核</button>
-        <button class="tab-btn" data-tab="tabSchedule" onclick="switchAdminTab('tabSchedule')">排休協調</button>
         <button class="ghost" style="margin-left:auto;" onclick="adminLogout()">登出</button>
       </div>
 
@@ -347,9 +384,7 @@
             </div>
             <div><label>員工類型</label>
               <select id="f_employeeType">
-                <option value="">請選擇</option>
-                <option>PT</option>
-                <option>正職</option>
+                <option value="正職" selected>正職</option>
               </select>
             </div>
             <div><label>職位</label>
@@ -363,13 +398,13 @@
             </div>
           </div>
           <div class="row3">
-            <div><label>到職日 *</label><input type="date" id="f_hireDate"></div>
-            <div><label>投保日期</label><input type="date" id="f_insuranceDate"></div>
-            <div><label>離職日期</label><input type="date" id="f_resignDate"></div>
+            <div><label>到職日 *</label><div class="date-select-placeholder" data-id="f_hireDate" data-day="true"></div></div>
+            <div><label>投保日期</label><div class="date-select-placeholder" data-id="f_insuranceDate" data-day="true"></div></div>
+            <div><label>離職日期</label><div class="date-select-placeholder" data-id="f_resignDate" data-day="true"></div></div>
           </div>
           <div class="row">
             <div><label>薪資（用於折抵金額試算）</label><input type="number" id="f_salary" placeholder="例如 40000"></div>
-            <div><label>銀行帳號</label><input id="f_account" placeholder="薪資轉帳用"></div>
+            <div><label>銀行帳號（僅限台新銀行）</label><div class="account-input-group"><span class="account-prefix">812</span><input id="f_account" placeholder="後面帳號數字"></div></div>
           </div>
           <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="f_email" placeholder="you@example.com"></div>
 
@@ -383,7 +418,7 @@
           </div>
           <div class="row3">
             <div><label>身份證字號 *（作為唯一識別）</label><input id="f_nationalId" placeholder="A123456789"></div>
-            <div><label>出生年月日</label><input type="date" id="f_birthDate"></div>
+            <div><label>出生年月日</label><div class="date-select-placeholder" data-id="f_birthDate" data-day="true"></div></div>
             <div><label>學歷</label><input id="f_education"></div>
           </div>
           <div><label>籍貫</label><input id="f_hometown"></div>
@@ -395,18 +430,18 @@
           </div>
           <div class="row">
             <div><label>家用電話</label><input id="f_homePhone"></div>
-            <div><label>個人手機</label><input id="f_mobilePhone"></div>
+            <div><label>個人手機 *</label><input id="f_mobilePhone"></div>
           </div>
           <div class="row">
             <div><label>IG</label><input id="f_ig"></div>
-            <div><label>LINE ID</label><input id="f_lineId"></div>
+            <div><label>LINE ID *</label><input id="f_lineId"></div>
           </div>
 
           <div class="section-title">緊急聯絡人</div>
           <div class="row3">
             <div><label>緊急聯絡人</label><input id="f_emergencyContact"></div>
             <div><label>關係</label><input id="f_emergencyRelation"></div>
-            <div><label>緊急聯絡人手機</label><input id="f_emergencyPhone"></div>
+            <div><label>緊急聯絡人手機 *</label><input id="f_emergencyPhone"></div>
           </div>
 
           <div class="section-title">備注</div>
@@ -423,6 +458,8 @@
           <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。特休天數/已用/剩餘天數也會自動同步寫入試算表最後幾欄，方便直接在 Sheet 上查看。</p>
           <button class="ghost" onclick="doSyncAllLeaveStats()">同步全部員工的特休數據到試算表</button>
           <div id="syncStatsMsg"></div>
+          <label>搜尋員工（姓名／暱稱／身份證字號／店點）</label>
+          <input id="empSearchInput" placeholder="輸入關鍵字搜尋…" oninput="filterEmployeeList_()">
           <div class="table-scroll" id="empListWrap"><div class="empty">載入中…</div></div>
         </div>
       </div>
@@ -430,7 +467,23 @@
       <div class="tab-content" id="tabPending">
         <div class="card">
           <h2>待審核假單</h2>
+          <div class="tabs" style="margin-bottom:12px;">
+            <button class="tab-btn active" data-store="全部" onclick="switchPendingStore('全部')">全部</button>
+            <button class="tab-btn" data-store="皮卡一店" onclick="switchPendingStore('皮卡一店')">皮卡一店</button>
+            <button class="tab-btn" data-store="皮卡二店" onclick="switchPendingStore('皮卡二店')">皮卡二店</button>
+            <button class="tab-btn" data-store="皮卡對眼店" onclick="switchPendingStore('皮卡對眼店')">皮卡對眼店</button>
+          </div>
           <div class="table-scroll" id="pendingWrap"><div class="empty">載入中…</div></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tabStoreLeaveHistory">
+        <div class="card">
+          <h2 id="storeLeaveHistoryTitle">請假紀錄總覽</h2>
+          <p class="hint" id="storeLeaveHistoryHint">顯示您負責店點、指定月份的全部請假紀錄（不限狀態），僅供查看。</p>
+          <label>選擇年月</label>
+          <div class="date-select-placeholder" data-id="storeLeaveHistoryYearMonth" data-day="false"></div>
+          <div class="table-scroll" id="storeLeaveHistoryWrap" style="margin-top:12px;"><div class="empty">請選擇年月。</div></div>
         </div>
       </div>
 
@@ -442,32 +495,37 @@
         </div>
       </div>
 
-      <div class="tab-content" id="tabSchedule">
-        <div class="card">
-          <h2>排休協調</h2>
-          <p class="hint">每月可休天數請直接到「排休設定」試算表分頁填寫（年月+店點+可休天數），系統不會自動計算。標記「⚠衝突」的日期代表同一天有 2 位以上技術師申請排休，請自行協調安排。</p>
-          <div class="row">
-            <div><label>店點</label>
-              <select id="schedAdminStore">
-                <option value="皮卡一店">皮卡一店</option>
-                <option value="皮卡二店">皮卡二店</option>
-                <option value="皮卡對眼店">皮卡對眼店</option>
-              </select>
-            </div>
-            <div><label>年月</label><input type="month" id="schedAdminYearMonth" value=""></div>
-          </div>
-          <button class="ghost" onclick="loadStoreSchedule()">查詢</button>
-          <div id="schedAdminQuotaInfo" style="margin-top:10px;"></div>
-          <div class="table-scroll" id="schedAdminWrap"><div class="empty">請選擇店點與年月後點查詢。</div></div>
-        </div>
-      </div>
-
       <div class="tab-content" id="tabDetail">
         <button class="ghost" onclick="switchAdminTab('tabList')">← 返回員工總覽</button>
 
         <div class="card" id="detailLeaveCard"></div>
 
+        <div class="card" id="detailManualAddCard" style="display:none;">
+          <h2>手動登記請假紀錄</h2>
+          <p class="hint">用於補登「沒有在系統內申請、但實際上已經用掉」的假，登記後會直接算作已核准，計入該員工的已用天數。</p>
+          <label>假別</label>
+          <select id="manualLeaveType">
+            <option value="特休">特休</option>
+            <option value="事假">事假</option>
+            <option value="病假">病假</option>
+            <option value="生理假">生理假</option>
+          </select>
+          <div class="row" style="margin-top:12px;">
+            <div><label>開始日</label><div class="date-select-placeholder" data-id="manualStart" data-day="true"></div></div>
+            <div><label>結束日</label><div class="date-select-placeholder" data-id="manualEnd" data-day="true"></div></div>
+          </div>
+          <label>備注（選填）</label>
+          <input id="manualLeaveNote" placeholder="例如：轉入系統前的舊資料">
+          <button class="primary" onclick="doManualAddLeave(this)">登記</button>
+          <div id="manualAddLeaveMsg"></div>
+        </div>
+
         <div class="card">
+          <h2>請假紀錄</h2>
+          <div class="table-scroll" id="detailLeaveHistoryWrap"><div class="empty">載入中…</div></div>
+        </div>
+
+        <div class="card" id="detailEditCard">
           <h2>員工詳細資料</h2>
           <input type="hidden" id="e_originalNationalId">
 
@@ -483,9 +541,7 @@
             </div>
             <div><label>員工類型</label>
               <select id="e_employeeType">
-                <option value="">請選擇</option>
-                <option>PT</option>
-                <option>正職</option>
+                <option value="正職" selected>正職</option>
               </select>
             </div>
             <div><label>職位</label>
@@ -499,13 +555,13 @@
             </div>
           </div>
           <div class="row3">
-            <div><label>到職日 *</label><input type="date" id="e_hireDate"></div>
-            <div><label>投保日期</label><input type="date" id="e_insuranceDate"></div>
-            <div><label>離職日期</label><input type="date" id="e_resignDate"></div>
+            <div><label>到職日 *</label><div class="date-select-placeholder" data-id="e_hireDate" data-day="true"></div></div>
+            <div><label>投保日期</label><div class="date-select-placeholder" data-id="e_insuranceDate" data-day="true"></div></div>
+            <div><label>離職日期</label><div class="date-select-placeholder" data-id="e_resignDate" data-day="true"></div></div>
           </div>
           <div class="row">
             <div><label>薪資（用於折抵金額試算）</label><input type="number" id="e_salary" placeholder="例如 40000"></div>
-            <div><label>銀行帳號</label><input id="e_account" placeholder="薪資轉帳用"></div>
+            <div><label>銀行帳號（僅限台新銀行）</label><div class="account-input-group"><span class="account-prefix">812</span><input id="e_account" placeholder="後面帳號數字"></div></div>
           </div>
           <div><label>Email（用於接收請假審核結果通知）</label><input type="email" id="e_email" placeholder="you@example.com"></div>
 
@@ -519,7 +575,7 @@
           </div>
           <div class="row3">
             <div><label>身份證字號 *（作為唯一識別）</label><input id="e_nationalId"></div>
-            <div><label>出生年月日</label><input type="date" id="e_birthDate"></div>
+            <div><label>出生年月日</label><div class="date-select-placeholder" data-id="e_birthDate" data-day="true"></div></div>
             <div><label>學歷</label><input id="e_education"></div>
           </div>
           <div><label>籍貫</label><input id="e_hometown"></div>
@@ -531,18 +587,18 @@
           </div>
           <div class="row">
             <div><label>家用電話</label><input id="e_homePhone"></div>
-            <div><label>個人手機</label><input id="e_mobilePhone"></div>
+            <div><label>個人手機 *</label><input id="e_mobilePhone"></div>
           </div>
           <div class="row">
             <div><label>IG</label><input id="e_ig"></div>
-            <div><label>LINE ID</label><input id="e_lineId"></div>
+            <div><label>LINE ID *</label><input id="e_lineId"></div>
           </div>
 
           <div class="section-title">緊急聯絡人</div>
           <div class="row3">
             <div><label>緊急聯絡人</label><input id="e_emergencyContact"></div>
             <div><label>關係</label><input id="e_emergencyRelation"></div>
-            <div><label>緊急聯絡人手機</label><input id="e_emergencyPhone"></div>
+            <div><label>緊急聯絡人手機 *</label><input id="e_emergencyPhone"></div>
           </div>
 
           <div class="section-title">備注</div>

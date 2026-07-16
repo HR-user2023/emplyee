@@ -304,7 +304,7 @@ function loadOtherLeaveOverview(){
 }
 
 function badgeHtml(status){
-  const icons = {'待審核':'○','已核准':'✓','已拒絕':'✕','在職':'●','離職':'–'};
+  const icons = {'待審核':'○','已核准':'✓','已拒絕':'✕','已銷假':'↩','在職':'●','離職':'–'};
   return '<span class="badge '+status+'">'+(icons[status]||'')+' '+status+'</span>';
 }
 
@@ -742,9 +742,12 @@ function loadEmployeeLeaveHistory_(nationalId){
     .then(function(records){
       const el = document.getElementById('detailLeaveHistoryWrap');
       if(!records.length){ el.innerHTML = '<div class="empty">尚無請假紀錄。</div>'; return; }
-      let html = '<table><thead><tr><th>假別</th><th>期間</th><th>天數</th><th>狀態</th><th>事由/備注</th><th>審核人</th></tr></thead><tbody>';
+      const isHR = ADMIN_ROLE === 'HR';
+      let html = '<table><thead><tr><th>假別</th><th>期間</th><th>天數</th><th>狀態</th><th>事由/備注</th><th>審核人</th>' + (isHR ? '<th>操作</th>' : '') + '</tr></thead><tbody>';
       records.forEach(r=>{
-        html += '<tr><td>'+r.leaveType+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+badgeHtml(r.status==='待審核'?'待審核':(r.status==='已核准'?'已核准':'已拒絕'))+'</td><td>'+(r.reason||'-')+(r.rejectReason?('<br><span style="color:var(--ink-soft);">拒絕原因：'+r.rejectReason+'</span>'):'')+'</td><td>'+(r.reviewer||'-')+'</td></tr>';
+        html += '<tr><td>'+r.leaveType+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+badgeHtml(r.status)+'</td><td>'+(r.reason||'-')+(r.rejectReason?('<br><span style="color:var(--ink-soft);">拒絕原因：'+r.rejectReason+'</span>'):'')+'</td><td>'+(r.reviewer||'-')+'</td>' +
+                (isHR ? '<td>' + (r.status==='已核准' ? '<button class="small-reject" onclick="doCancelApprovedLeave(\''+r.requestId+'\')">銷假</button>' : '-') + '</td>' : '') +
+                '</tr>';
       });
       html += '</tbody></table>';
       el.innerHTML = html;
@@ -752,6 +755,17 @@ function loadEmployeeLeaveHistory_(nationalId){
     .catch(function(err){
       document.getElementById('detailLeaveHistoryWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
     });
+}
+
+function doCancelApprovedLeave(requestId){
+  const note = prompt('銷假原因（選填，例如：提早回來上班）：');
+  if(note === null) return;
+  callApi('cancelApprovedLeaveRecord', { token: ADMIN_TOKEN, requestId: requestId, note: note })
+    .then(function(){
+      loadEmployeeLeaveHistory_(CURRENT_DETAIL_NATIONAL_ID);
+      openEmployeeDetail(CURRENT_DETAIL_NATIONAL_ID);
+    })
+    .catch(function(err){ alert(err.message || err); });
 }
 
 function doManualAddLeave(btn){

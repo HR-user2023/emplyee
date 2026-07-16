@@ -512,6 +512,7 @@ function doSetAdminPassword(btn){
 
 function applyAdminStoreRestrictions_(){
   const isHR = ADMIN_ROLE === 'HR';
+  const isAdminStaff = ADMIN_ROLE === '行政';
 
   if(ADMIN_STORES.length){
     const pendingTabs = document.querySelectorAll('#tabPending .tabs .tab-btn');
@@ -533,6 +534,14 @@ function applyAdminStoreRestrictions_(){
   if(addTab) addTab.style.display = isHR ? '' : 'none';
   if(!isHR && (document.getElementById('tabNewHire').classList.contains('active') || document.getElementById('tabAdd').classList.contains('active'))){
     switchAdminTab('tabList');
+  }
+
+  const pendingTab = document.querySelector('[data-tab="tabPending"]');
+  if(pendingTab) pendingTab.style.display = isAdminStaff ? 'none' : '';
+  const storeHistoryTab = document.querySelector('[data-tab="tabStoreLeaveHistory"]');
+  if(storeHistoryTab) storeHistoryTab.style.display = isAdminStaff ? '' : 'none';
+  if(isAdminStaff && document.getElementById('tabPending').classList.contains('active')){
+    switchAdminTab('tabStoreLeaveHistory');
   }
 }
 
@@ -573,6 +582,12 @@ function switchAdminTab(tab){
   if(tab==='tabList') loadEmployeeList();
   if(tab==='tabPending') loadPendingRequests();
   if(tab==='tabNewHire') loadPendingNewHires();
+  if(tab==='tabStoreLeaveHistory'){
+    if(!getDateSelectValue_('storeLeaveHistoryYearMonth', false)){
+      setDateSelectValue_('storeLeaveHistoryYearMonth', defaultYearMonth_(), false);
+    }
+    loadStoreMonthlyLeaveRecords();
+  }
 }
 
 function doAddEmployee(btn){
@@ -851,6 +866,24 @@ function loadPendingRequests(){
     .catch(function(err){ document.getElementById('pendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
 }
 
+function loadStoreMonthlyLeaveRecords(){
+  const yearMonth = getDateSelectValue_('storeLeaveHistoryYearMonth', false);
+  if(!yearMonth) return;
+  const el = document.getElementById('storeLeaveHistoryWrap');
+  el.innerHTML = '<div class="empty">載入中…</div>';
+  callApi('getStoreMonthlyLeaveRecords', { token: ADMIN_TOKEN, yearMonth: yearMonth })
+    .then(function(list){
+      if(!list.length){ el.innerHTML = '<div class="empty">這個月沒有請假紀錄。</div>'; return; }
+      let html = '<table><thead><tr><th>店點</th><th>姓名</th><th>假別</th><th>期間</th><th>天數</th><th>狀態</th><th>事由</th></tr></thead><tbody>';
+      list.forEach(r=>{
+        html += '<tr><td>'+(r.branch||'-')+'</td><td>'+r.name+'</td><td>'+r.leaveType+'</td><td>'+r.startDate+' ~ '+r.endDate+'</td><td>'+r.days+'</td><td>'+badgeHtml(r.status)+'</td><td>'+(r.reason||'-')+'</td></tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
+    })
+    .catch(function(err){ el.innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
+}
+
 function switchPendingStore(store){
   PENDING_STORE_FILTER = store;
   document.querySelectorAll('#tabPending .tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.store===store));
@@ -924,5 +957,9 @@ if ('serviceWorker' in navigator) {
 }
 
 populateAllDateSelects_();
+const storeHistY = document.getElementById('storeLeaveHistoryYearMonth_y');
+const storeHistM = document.getElementById('storeLeaveHistoryYearMonth_m');
+if(storeHistY) storeHistY.addEventListener('change', loadStoreMonthlyLeaveRecords);
+if(storeHistM) storeHistM.addEventListener('change', loadStoreMonthlyLeaveRecords);
 tryAutoLoginEmployee_();
 tryAutoLoginAdmin_();

@@ -458,8 +458,18 @@
           <p class="hint">此表僅顯示常用欄位；完整人事資料（身份證字號、地址、緊急聯絡人等）請直接開啟「員工資料」試算表分頁查看。特休天數/已用/剩餘天數也會自動同步寫入試算表最後幾欄，方便直接在 Sheet 上查看。</p>
           <button class="ghost" onclick="doSyncAllLeaveStats()">同步全部員工的特休數據到試算表</button>
           <div id="syncStatsMsg"></div>
-          <label>搜尋員工（姓名／暱稱／身份證字號／店點）</label>
-          <input id="empSearchInput" placeholder="輸入關鍵字搜尋…" oninput="filterEmployeeList_()">
+          <div class="row">
+            <div><label>搜尋員工（姓名／暱稱／身份證字號／店點）</label>
+              <input id="empSearchInput" placeholder="輸入關鍵字搜尋…" oninput="filterEmployeeList_()">
+            </div>
+            <div><label>狀態</label>
+              <select id="empStatusFilter" onchange="filterEmployeeList_()">
+                <option value="在職" selected>在職</option>
+                <option value="離職">離職</option>
+                <option value="全部">全部</option>
+              </select>
+            </div>
+          </div>
           <div class="table-scroll" id="empListWrap"><div class="empty">載入中…</div></div>
         </div>
       </div>
@@ -509,6 +519,7 @@
             <option value="事假">事假</option>
             <option value="病假">病假</option>
             <option value="生理假">生理假</option>
+            <option value="喪假">喪假</option>
           </select>
           <div class="row" style="margin-top:12px;">
             <div><label>開始日</label><div class="date-select-placeholder" data-id="manualStart" data-day="true"></div></div>

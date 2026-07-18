@@ -33,7 +33,8 @@ let ADMIN_ROLE = '';
 let EMP_TARGET_TAB = 'empTabQuery';
 let SELECTED_SCHED_DATES = [];
 let SCHED_CAL_STATE = { yearMonth: null, segments: [], closureWeekday: null, markers: {} };
-const OTHER_LEAVE_TYPES = ['事假','病假','生理假','喪假'];
+const OTHER_LEAVE_TYPES = ['事假','病假','生理假','喪假']; // 請假申請下拉選單用，包含喪假
+const OTHER_LEAVE_OVERVIEW_TYPES = ['事假','病假','生理假']; // 「其他假別總覽」用，不顯示喪假（喪假只在請假申請/手動登記出現）
 
 function switchMode(mode){
   const isEmp = (mode === 'emp-query');
@@ -280,11 +281,11 @@ function loadOtherLeaveOverview(){
   const el = document.getElementById('otherLeaveOverview');
   if(!el) return;
   let html = '<table><thead><tr><th>假別</th><th>本期/預設天數</th><th>已用</th><th>剩餘／備注</th></tr></thead><tbody>';
-  OTHER_LEAVE_TYPES.forEach(type=>{ html += '<tr id="otherLeaveRow_'+type+'"><td>'+type+'</td><td colspan="3">載入中…</td></tr>'; });
+  OTHER_LEAVE_OVERVIEW_TYPES.forEach(type=>{ html += '<tr id="otherLeaveRow_'+type+'"><td>'+type+'</td><td colspan="3">載入中…</td></tr>'; });
   html += '</tbody></table>';
   el.innerHTML = html;
 
-  OTHER_LEAVE_TYPES.forEach(type=>{
+  OTHER_LEAVE_OVERVIEW_TYPES.forEach(type=>{
     callApi('getLeaveQuota', { nationalId: CURRENT_EMPLOYEE.nationalId, leaveType: type })
       .then(function(quota){
         const row = document.getElementById('otherLeaveRow_'+type);

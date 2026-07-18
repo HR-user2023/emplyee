@@ -33,7 +33,7 @@ let ADMIN_ROLE = '';
 let EMP_TARGET_TAB = 'empTabQuery';
 let SELECTED_SCHED_DATES = [];
 let SCHED_CAL_STATE = { yearMonth: null, segments: [], closureWeekday: null, markers: {} };
-const OTHER_LEAVE_TYPES = ['事假','病假','生理假'];
+const OTHER_LEAVE_TYPES = ['事假','病假','生理假','喪假'];
 
 function switchMode(mode){
   const isEmp = (mode === 'emp-query');
@@ -261,7 +261,7 @@ function renderEmpDashboard(emp, leave){
     '</div>' +
     '<label>事由（選填）</label><textarea id="reqReason" placeholder="例如：家庭旅遊"></textarea>' +
     '<button class="primary" onclick="doSubmitLeave(this)">送出申請</button>' +
-    '<p class="hint">特休／事假／病假／生理假會依剩餘天數自動檢查。</p>' +
+    '<p class="hint">特休／事假／病假／生理假會依剩餘天數自動檢查；喪假天數僅供參考，交由主管審核判斷。</p>' +
     '<div id="submitLeaveMsg"></div>' +
     '</div>' +
     '<div class="card"><h2>我的請假紀錄</h2><div class="table-scroll" id="myLeaveList"><div class="empty">載入中…</div></div></div>';
@@ -660,7 +660,7 @@ function loadEmployeeList(){
   callApi('getAllEmployeesForAdmin', { token: ADMIN_TOKEN })
     .then(function(list){
       EMP_LIST_CACHE = list;
-      renderEmployeeTable_(list);
+      filterEmployeeList_();
     })
     .catch(function(err){ document.getElementById('empListWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
 }
@@ -684,8 +684,17 @@ function renderEmployeeTable_(list){
 
 function filterEmployeeList_(){
   const kw = document.getElementById('empSearchInput').value.trim().toLowerCase();
-  if(!kw){ renderEmployeeTable_(EMP_LIST_CACHE); return; }
-  const filtered = EMP_LIST_CACHE.filter(e =>
+  const statusFilter = document.getElementById('empStatusFilter').value;
+
+  let base = EMP_LIST_CACHE;
+  // 有輸入關鍵字搜尋時，不受狀態篩選限制，確保找得到所有員工（包含離職）；
+  // 沒有輸入關鍵字時，才套用「在職/離職/全部」的狀態篩選，預設只顯示在職。
+  if(!kw && statusFilter !== '全部'){
+    base = base.filter(e => e.status === statusFilter);
+  }
+
+  if(!kw){ renderEmployeeTable_(base); return; }
+  const filtered = base.filter(e =>
     (e.name||'').toLowerCase().indexOf(kw) > -1 ||
     (e.nickname||'').toLowerCase().indexOf(kw) > -1 ||
     (e.nationalId||'').toLowerCase().indexOf(kw) > -1 ||

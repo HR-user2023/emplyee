@@ -525,6 +525,8 @@
             <div><label>開始日</label><div class="date-select-placeholder" data-id="manualStart" data-day="true"></div></div>
             <div><label>結束日</label><div class="date-select-placeholder" data-id="manualEnd" data-day="true"></div></div>
           </div>
+          <label>小時（選填，僅事假／病假可用，同一天請幾小時；留空則以天為單位，每滿8小時換算1天）</label>
+          <input type="number" id="manualLeaveHours" min="0" max="23" step="0.5" placeholder="例如：4">
           <label>備注（選填）</label>
           <input id="manualLeaveNote" placeholder="例如：轉入系統前的舊資料">
           <button class="primary" onclick="doManualAddLeave(this)">登記</button>

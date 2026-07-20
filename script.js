@@ -260,9 +260,11 @@ function renderEmpDashboard(emp, leave){
       '<div><label>開始日</label>' + buildDateSelectHtml_('reqStart', true) + '</div>' +
       '<div><label>結束日</label>' + buildDateSelectHtml_('reqEnd', true) + '</div>' +
     '</div>' +
+    '<label>小時（選填，僅事假／病假可用，同一天請幾小時；留空則以天為單位）</label>' +
+    '<input type="number" id="reqHours" min="0" max="23" step="0.5" placeholder="例如：4">' +
     '<label>事由（選填）</label><textarea id="reqReason" placeholder="例如：家庭旅遊"></textarea>' +
     '<button class="primary" onclick="doSubmitLeave(this)">送出申請</button>' +
-    '<p class="hint">特休／事假／病假／生理假會依剩餘天數自動檢查；喪假天數僅供參考，交由主管審核判斷。</p>' +
+    '<p class="hint">特休／事假／病假／生理假會依剩餘天數自動檢查；喪假天數僅供參考，交由主管審核判斷。事假／病假每滿 8 小時會自動換算成 1 天。</p>' +
     '<div id="submitLeaveMsg"></div>' +
     '</div>' +
     '<div class="card"><h2>我的請假紀錄</h2><div class="table-scroll" id="myLeaveList"><div class="empty">載入中…</div></div></div>';
@@ -343,8 +345,11 @@ function doSubmitLeave(btn){
   const leaveType = document.getElementById('reqLeaveType').value;
   const startDate = getDateSelectValue_('reqStart', true);
   const endDate = getDateSelectValue_('reqEnd', true);
+  const hours = document.getElementById('reqHours').value;
   const reason = document.getElementById('reqReason').value;
   if(!startDate || !endDate){ showMsg('submitLeaveMsg','請選擇開始與結束日期。', false); return; }
+  if(hours && (leaveType !== '事假' && leaveType !== '病假')){ showMsg('submitLeaveMsg','目前只有事假、病假支援用小時申請，請清空小時欄位或改選假別。', false); return; }
+  if(hours && startDate !== endDate){ showMsg('submitLeaveMsg','用小時申請時，開始日跟結束日請選同一天。', false); return; }
 
   setBtnBusy(btn, true, '送出中…');
   callApi('submitLeaveRequest', {
@@ -353,6 +358,7 @@ function doSubmitLeave(btn){
     leaveType: leaveType,
     startDate: startDate,
     endDate: endDate,
+    hours: hours,
     reason: reason
   })
     .then(function(res){
@@ -805,8 +811,11 @@ function doManualAddLeave(btn){
   const leaveType = document.getElementById('manualLeaveType').value;
   const startDate = getDateSelectValue_('manualStart', true);
   const endDate = getDateSelectValue_('manualEnd', true);
+  const hours = document.getElementById('manualLeaveHours').value;
   const note = document.getElementById('manualLeaveNote').value.trim();
   if(!startDate || !endDate){ showMsg('manualAddLeaveMsg', '請選擇開始日與結束日。', false); return; }
+  if(hours && (leaveType !== '事假' && leaveType !== '病假')){ showMsg('manualAddLeaveMsg','目前只有事假、病假支援用小時登記，請清空小時欄位或改選假別。', false); return; }
+  if(hours && startDate !== endDate){ showMsg('manualAddLeaveMsg','用小時登記時，開始日跟結束日請選同一天。', false); return; }
   setBtnBusy(btn, true, '登記中…');
   callApi('manualAddLeaveRecord', {
     token: ADMIN_TOKEN,
@@ -814,12 +823,14 @@ function doManualAddLeave(btn){
     leaveType: leaveType,
     startDate: startDate,
     endDate: endDate,
+    hours: hours,
     note: note
   })
     .then(function(res){
       setBtnBusy(btn, false);
       showMsg('manualAddLeaveMsg', '已登記（'+res.days+' 天）。', true);
       document.getElementById('manualLeaveNote').value = '';
+      document.getElementById('manualLeaveHours').value = '';
       loadEmployeeLeaveHistory_(CURRENT_DETAIL_NATIONAL_ID);
       openEmployeeDetail(CURRENT_DETAIL_NATIONAL_ID);
     })

@@ -475,9 +475,7 @@ function doAdminLogin(btn){
       document.getElementById('adminWelcome').textContent = '您好，' + (res.name || res.email) + '（' + (ADMIN_ROLE||'HR') + '，審核紀錄會用這個名稱記錄）' +
         (ADMIN_STORES.length ? '　您負責：' + ADMIN_STORES.join('、') : '');
       applyAdminStoreRestrictions_();
-      loadEmployeeList();
-      loadPendingRequests();
-      loadPendingNewHires();
+      loadAdminDashboard_();
       identifyOneSignalHR_();
     })
     .catch(function(err){ setBtnBusy(btn, false); showMsg('adminLoginMsg', err.message || String(err), false); });
@@ -539,7 +537,7 @@ function applyAdminStoreRestrictions_(){
   const addTab = document.querySelector('[data-tab="tabAdd"]');
   if(addTab) addTab.style.display = isHR ? '' : 'none';
   if(!isHR && (document.getElementById('tabNewHire').classList.contains('active') || document.getElementById('tabAdd').classList.contains('active'))){
-    switchAdminTab('tabList');
+    switchAdminTab('tabList', true);
   }
 
   // 待審核假單：HR 不需要（改看全部店點的請假紀錄總覽），主管需要（要審核自己店點），行政不需要（不能審核）
@@ -590,9 +588,10 @@ function adminLogout(){
   document.getElementById('adminRememberMe').checked = false;
 }
 
-function switchAdminTab(tab){
+function switchAdminTab(tab, skipLoad){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active', c.id===tab));
+  if(skipLoad) return;
   if(tab==='tabList') loadEmployeeList();
   if(tab==='tabPending') loadPendingRequests();
   if(tab==='tabNewHire') loadPendingNewHires();
@@ -665,11 +664,13 @@ let EMP_LIST_CACHE = [];
 function loadEmployeeList(){
   if(!ADMIN_TOKEN) return;
   callApi('getAllEmployeesForAdmin', { token: ADMIN_TOKEN })
-    .then(function(list){
-      EMP_LIST_CACHE = list;
-      filterEmployeeList_();
-    })
+    .then(function(list){ renderEmployeeListData_(list); })
     .catch(function(err){ document.getElementById('empListWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
+}
+
+function renderEmployeeListData_(list){
+  EMP_LIST_CACHE = list;
+  filterEmployeeList_();
 }
 
 function renderEmployeeTable_(list){
@@ -887,11 +888,13 @@ let PENDING_STORE_FILTER = '全部';
 function loadPendingRequests(){
   if(!ADMIN_TOKEN) return;
   callApi('getPendingRequests', { token: ADMIN_TOKEN })
-    .then(function(list){
-      PENDING_REQUESTS_ALL = list;
-      renderPendingTable();
-    })
+    .then(function(list){ renderPendingRequestsData_(list); })
     .catch(function(err){ document.getElementById('pendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
+}
+
+function renderPendingRequestsData_(list){
+  PENDING_REQUESTS_ALL = list;
+  renderPendingTable();
 }
 
 function loadStoreMonthlyLeaveRecords(){
@@ -950,19 +953,38 @@ function doReview(requestId, decision, btn){
 function loadPendingNewHires(){
   if(!ADMIN_TOKEN) return;
   callApi('getPendingNewHires', { token: ADMIN_TOKEN })
-    .then(function(list){
-      const el = document.getElementById('newHirePendingWrap');
-      if(!list.length){ el.innerHTML = '<div class="empty">目前沒有待審核的新進員工資料。</div>'; return; }
-      let html = '<table><thead><tr><th>提交編號</th><th>姓名</th><th>身份證字號</th><th>店點</th><th>職位</th><th>到職日</th><th>手機</th><th>操作</th></tr></thead><tbody>';
-      list.forEach(r=>{
-        html += '<tr><td>'+r.submissionId+'</td><td>'+r.name+'</td><td>'+r.nationalId+'</td><td>'+(r.branch||'-')+'</td><td>'+(r.position||'-')+'</td><td>'+r.hireDate+'</td><td>'+(r.mobilePhone||'-')+'</td>' +
-                '<td><button class="small-approve" onclick="doReviewNewHire(\''+r.submissionId+'\',\'approve\',this)">核准建立</button>' +
-                '<button class="small-reject" onclick="doReviewNewHire(\''+r.submissionId+'\',\'reject\',this)">忽略</button></td></tr>';
-      });
-      html += '</tbody></table>';
-      el.innerHTML = html;
-    })
+    .then(function(list){ renderPendingNewHiresData_(list); })
     .catch(function(err){ document.getElementById('newHirePendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
+}
+
+function renderPendingNewHiresData_(list){
+  const el = document.getElementById('newHirePendingWrap');
+  if(!list.length){ el.innerHTML = '<div class="empty">目前沒有待審核的新進員工資料。</div>'; return; }
+  let html = '<table><thead><tr><th>提交編號</th><th>姓名</th><th>身份證字號</th><th>店點</th><th>職位</th><th>到職日</th><th>手機</th><th>操作</th></tr></thead><tbody>';
+  list.forEach(r=>{
+    html += '<tr><td>'+r.submissionId+'</td><td>'+r.name+'</td><td>'+r.nationalId+'</td><td>'+(r.branch||'-')+'</td><td>'+(r.position||'-')+'</td><td>'+r.hireDate+'</td><td>'+(r.mobilePhone||'-')+'</td>' +
+              '<td><button class="small-approve" onclick="doReviewNewHire(\''+r.submissionId+'\',\'approve\',this)">核准建立</button>' +
+              '<button class="small-reject" onclick="doReviewNewHire(\''+r.submissionId+'\',\'reject\',this)">忽略</button></td></tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// 登入時用這支合併過的 API，一次拿到員工總覽/待審核假單/新進員工待審核三份資料，
+// 避免同時打三支平行請求造成 Apps Script 同時執行數過多、互相卡住變慢或失敗
+function loadAdminDashboard_(){
+  if(!ADMIN_TOKEN) return;
+  callApi('getAdminDashboardData', { token: ADMIN_TOKEN })
+    .then(function(res){
+      renderEmployeeListData_(res.employees);
+      renderPendingRequestsData_(res.pendingRequests);
+      renderPendingNewHiresData_(res.pendingNewHires);
+    })
+    .catch(function(err){
+      document.getElementById('empListWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
+      document.getElementById('pendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
+      document.getElementById('newHirePendingWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>';
+    });
 }
 
 function doReviewNewHire(submissionId, decision, btn){

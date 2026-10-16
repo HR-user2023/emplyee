@@ -8,7 +8,7 @@
 // ============================================================
 
 // 請把下面這一行換成你自己部署的 Apps Script 網頁應用程式網址（結尾是 /exec）
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbzvKzoSTeHlU43Xs9nYt39FMvFneiANgeE1yxhdaIGLRTSgtjDIyWu7HMroaNhnfRnN/exec';
+const API_BASE_URL = 'PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE';
 
 async function callApi(action, payload) {
   const url = API_BASE_URL
@@ -540,9 +540,9 @@ function applyAdminStoreRestrictions_(){
     switchAdminTab('tabList', true);
   }
 
-  // 待審核假單：HR 不需要（改看全部店點的請假紀錄總覽），主管需要（要審核自己店點），行政不需要（不能審核）
+  // 待審核假單：HR（看全部店點）與主管（看自己店點）需要；行政不能審核所以不顯示
   const pendingTab = document.querySelector('[data-tab="tabPending"]');
-  const showPending = ADMIN_ROLE === '主管';
+  const showPending = (ADMIN_ROLE === 'HR' || ADMIN_ROLE === '主管');
   if(pendingTab) pendingTab.style.display = showPending ? '' : 'none';
 
   // 請假紀錄總覽：HR/主管/行政都能看，只是範圍不同（HR看全部店點，主管/行政看自己負責店點）

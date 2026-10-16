@@ -101,7 +101,11 @@ function getDateSelectValue_(idPrefix, includeDay){
 }
 
 function setDateSelectValue_(idPrefix, value, includeDay){
-  if(!value) return;
+  if(!value){
+    // 沒有資料時要清空，避免殘留上一位員工的日期
+    ['_y','_m','_d'].forEach(function(sfx){ const el = document.getElementById(idPrefix+sfx); if(el) el.value = ''; });
+    return;
+  }
   const parts = String(value).split('-');
   const yEl = document.getElementById(idPrefix+'_y');
   const mEl = document.getElementById(idPrefix+'_m');
@@ -668,8 +672,26 @@ function loadEmployeeList(){
     .catch(function(err){ document.getElementById('empListWrap').innerHTML = '<div class="msg error">'+(err.message||err)+'</div>'; });
 }
 
+function renderEmployeeStats_(){
+  const el = document.getElementById('empStatsWrap');
+  if(!el) return;
+  const active = EMP_LIST_CACHE.filter(e => e.status === '在職');
+  const resigned = EMP_LIST_CACHE.length - active.length;
+  function countBy(key){
+    const m = {};
+    active.forEach(e => { const k = e[key] || '未填寫'; m[k] = (m[k]||0) + 1; });
+    return Object.keys(m).sort((a,b)=>m[b]-m[a]).map(k => '<span class="badge" style="margin:2px 4px 2px 0;">'+k+'：'+m[k]+' 人</span>').join('') || '-';
+  }
+  el.innerHTML = '<div style="margin:12px 0;padding:12px;border:1px solid var(--line,#ddd);border-radius:10px;">' +
+    '<strong>人員統計</strong>　在職 '+active.length+' 人／離職 '+resigned+' 人' +
+    '<div style="margin-top:8px;"><div class="hint">依店點（在職）</div>'+countBy('branch')+'</div>' +
+    '<div style="margin-top:8px;"><div class="hint">依職位（在職）</div>'+countBy('position')+'</div>' +
+    '<div style="margin-top:8px;"><div class="hint">依員工類型（在職）</div>'+countBy('employeeType')+'</div></div>';
+}
+
 function renderEmployeeListData_(list){
   EMP_LIST_CACHE = list;
+  renderEmployeeStats_();
   filterEmployeeList_();
 }
 
